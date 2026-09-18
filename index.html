@@ -1,0 +1,1969 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d0f13">
+<title>修仙：逆命</title>
+<style>
+:root{
+  --bg:#0c0e12; --panel:#141821; --panel2:#1b2130; --line:#2b3342;
+  --ink:#d7dbe3; --dim:#8790a1; --gold:#c9a45c; --blood:#a8403c;
+  --jade:#4f9478; --evil:#8b5cc7; --warn:#d08a3a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  background-image:radial-gradient(circle at 50% -20%,#1a2130 0%,#0c0e12 55%);
+  background-attachment:fixed;
+  font-family:"Songti SC","STSong","SimSun","Noto Serif CJK SC",serif;
+  font-size:16px; line-height:1.8; letter-spacing:.02em;
+}
+#app{max-width:720px;margin:0 auto;padding:0 12px calc(190px + env(safe-area-inset-bottom))}
+
+/* ---------- 状态栏 ---------- */
+#hud{
+  position:sticky; top:0; z-index:20; margin:0 -12px 10px; padding:8px 12px 10px;
+  background:linear-gradient(180deg,#0c0e12 78%,rgba(12,14,18,.86));
+  border-bottom:1px solid var(--line); backdrop-filter:blur(6px);
+}
+.hudtop{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.realm{font-size:17px;color:var(--gold);letter-spacing:.12em}
+.realm small{color:var(--dim);font-size:12px;letter-spacing:0;margin-left:6px}
+.pw{font-size:12px;color:var(--dim)}
+.pw b{color:var(--jade);font-weight:400}
+.bars{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:7px}
+.bar{font-size:11px;color:var(--dim)}
+.bar .lab{display:flex;justify-content:space-between;line-height:1.4}
+.bar .lab i{font-style:normal;color:var(--ink)}
+.trk{height:5px;background:#222836;border-radius:3px;overflow:hidden;margin-top:2px}
+.trk > i{display:block;height:100%;border-radius:3px;transition:width .25s}
+.f-qi{background:linear-gradient(90deg,#3b6ea8,#78b6e6)}
+.f-heart{background:linear-gradient(90deg,#8a6a2f,#dcc07a)}
+.f-hurt{background:linear-gradient(90deg,#7a2b28,#d1554e)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.chip{font-size:11.5px;color:var(--dim);border:1px solid var(--line);border-radius:2px;padding:1px 7px}
+.chip b{color:var(--ink);font-weight:400}
+.chip.warn{color:#e08a80;border-color:#7a3a35;background:#1a1010}
+.chip.doom{color:#e8b3a6;border-color:#7a2f2f;background:#1c1113;cursor:pointer}
+.chip.doom:hover{color:#ffd9cf;border-color:#a8403c}
+.acts-in button.egg{border-color:#a8403c;background:linear-gradient(90deg,#7a2b28,#c05a4e);color:#ffeae4}
+.acts-in button.egg:hover{filter:brightness(1.08);color:#fff}
+.attrbar{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.attrbar i{font-style:normal;font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:2px;padding:1px 6px}
+.attrbar i b{color:var(--gold);font-weight:400}
+.rcard{margin:0 0 14px;padding:10px 12px;border:1px solid #3a2f3f;border-left:2px solid var(--evil);background:#161220;text-indent:0}
+.rc-h{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;color:#c9a9e6;font-size:15px}
+.rc-h span{font-size:12.5px;color:var(--dim)}
+.rc-a{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px;font-size:12px;color:var(--dim)}
+.rc-p{margin-top:7px;font-size:12px;color:var(--warn)}
+.cr-sec{font-size:13px;color:var(--gold);letter-spacing:.1em;margin:2px 0 9px}
+.cr-row{display:flex;gap:9px;margin-bottom:14px}
+.cr-row button{
+  flex:1;min-height:48px;cursor:pointer;font-family:inherit;font-size:16px;
+  background:var(--panel2);color:var(--ink);border:1px solid var(--line);
+  border-left:3px solid #46536b;border-radius:2px;transition:.15s;
+}
+.cr-row button.on{border-color:var(--gold);border-left-color:var(--gold);color:var(--gold);background:#20261b}
+.cr-attr{display:flex;justify-content:space-between;align-items:center;padding:6px 2px;border-bottom:1px solid #202634}
+.cr-n b{font-weight:400;color:var(--ink);margin-right:8px}
+.cr-n em{font-style:normal;font-size:12px;color:var(--dim)}
+.cr-c{display:flex;align-items:center;gap:8px}
+.cr-v{min-width:24px;text-align:center;color:var(--gold);font-size:17px}
+.sq{width:42px;height:42px;line-height:1;font-size:19px;font-family:inherit;cursor:pointer;
+  background:#212838;color:var(--ink);border:1px solid var(--line);border-radius:2px}
+.sq:disabled{opacity:.32;cursor:not-allowed}
+
+/* ---------- 正文 ---------- */
+#stage{
+  background:var(--panel);border:1px solid var(--line);border-radius:3px;
+  padding:16px 15px 6px;margin-top:4px;
+  box-shadow:0 0 0 1px rgba(0,0,0,.4) inset,0 18px 40px -30px #000;
+}
+#stage h2{
+  margin:0 0 12px;font-size:18px;font-weight:400;color:var(--gold);letter-spacing:.14em;
+  border-left:3px solid var(--gold);padding-left:9px;line-height:1.5;
+}
+#stage p{margin:0 0 12px;text-indent:2em;color:#c6cbd6}
+.news{
+  margin:0 0 14px;padding:10px 12px;border-left:2px solid var(--warn);
+  background:#1a1710;color:#dcc79a;font-size:14.5px;text-indent:0;line-height:1.7;
+}
+.news p{margin:0;text-indent:0;color:#dcc79a}
+.news p + p{margin-top:8px}
+.news.good{border-color:var(--jade);background:#101a17;color:#a9d8c4}
+.news.good p{color:#a9d8c4}
+.news.bad{border-color:var(--blood);background:#1a1010;color:#e0aa9f}
+.news.bad p{color:#e0aa9f}
+
+/* ---------- 选项 ---------- */
+#opts{margin-top:14px}
+.opt{
+  display:block;width:100%;text-align:left;cursor:pointer;
+  background:var(--panel2);color:var(--ink);font-family:inherit;font-size:15.5px;
+  border:1px solid var(--line);border-left:3px solid #46536b;border-radius:2px;
+  padding:12px 13px;margin-bottom:9px;line-height:1.65;transition:.15s;min-height:48px;
+}
+.opt:hover:not(:disabled){border-left-color:var(--gold);background:#202836;transform:translateX(2px)}
+.opt:active:not(:disabled){transform:translateX(1px) scale(.995)}
+.opt em{display:block;font-style:normal;font-size:12.5px;color:var(--dim);margin-top:4px;letter-spacing:.02em}
+.opt em.no{color:#7d5a54}
+.opt:disabled{opacity:.45;cursor:not-allowed;border-left-color:#3a2b2b}
+
+/* ---------- 底部动作 ---------- */
+#acts{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  background:linear-gradient(180deg,rgba(12,14,18,.75),#0c0e12 45%);
+  border-top:1px solid var(--line);padding:9px 12px calc(9px + env(safe-area-inset-bottom));
+}
+.acts-in{max-width:720px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px}
+.acts-in button{
+  flex:1 1 auto;min-width:74px;min-height:42px;cursor:pointer;
+  background:#171d29;color:#b9c1cf;border:1px solid var(--line);border-radius:2px;
+  font-family:inherit;font-size:13.5px;padding:8px 6px;transition:.15s;
+}
+.acts-in button:hover:not(:disabled){color:var(--gold);border-color:var(--gold)}
+.acts-in button:disabled{opacity:.4;cursor:not-allowed}
+.acts-in button.hot{
+  flex:1 1 100%;color:#1a1408;border-color:var(--gold);
+  background:linear-gradient(90deg,#c9a45c,#e2c98d);font-size:15px;letter-spacing:.1em;
+}
+.acts-in button.hot:hover{filter:brightness(1.08);color:#1a1408}
+.acts-in button.dg:hover{color:#e08a80;border-color:var(--blood)}
+#tip{max-width:720px;margin:6px auto 0;font-size:11px;color:#5b6474;letter-spacing:.04em}
+.endstat{margin-top:6px;font-size:13.5px;color:var(--dim);text-indent:0}
+.endstat b{color:var(--ink);font-weight:400}
+@media(max-width:400px){
+  body{font-size:15.5px}
+  #stage{padding:14px 12px 4px}
+  .bars{grid-template-columns:1fr 1fr 1fr;gap:5px}
+  .bar{font-size:10.5px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="hud"></header>
+  <main id="stage"></main>
+  <section id="opts"></section>
+</div>
+<footer id="acts"></footer>
+<script>
+/* ==========================================================================
+   修仙：逆命 —— 单文件文字冒险
+   状态：境界 / 修为 / 灵石 / 道心 / 寿元 / 伤势
+   ========================================================================== */
+
+var RM = [
+  { n:'炼气期', need:100, pw:12,  life:0   },
+  { n:'筑基期', need:220, pw:34,  life:40  },
+  { n:'金丹期', need:420, pw:84,  life:70  },
+  { n:'元婴期', need:760, pw:180, life:110 },
+  { n:'化神期', need:1e9, pw:400, life:160 }
+];
+var SAVE_KEY = 'xn_niming_v1';
+
+var ENDINGS = {
+  ASCEND:{
+    t:'飞升 · 逆命者', rank:'上上',
+    rankText:'废灵根，杂役出身，一路踩着尸骨上来。天认了你的命。',
+    say:'碑上那句话是对的：逆天者，先逆己身。',
+    x:'劫云散尽，九色天光垂落。你最后看了一眼这座山——当年那个跪在青石阶下、连一句「留下」都求不到的孩子，就埋在这座山的雨里。' +
+      '你抬脚踏上去，脚下是空的，身上是轻的。'
+  },
+  DEAD:{
+    t:'身死道消', rank:'下',
+    rankText:'一世苦修，止于此处。没人记得你的名字。',
+    say:'仙途之上，尸骨比灵石多。',
+    x:'你倒下去的时候并没有想什么。血很快被风吹冷，雪盖上你的脸，像什么也没发生过。' +
+      '三年后有人经过这里，捡走了你的储物袋，还顺手踢开了你的骨头。'
+  },
+  DEMON:{
+    t:'堕入魔道', rank:'下下',
+    rankText:'你活下来了，但活下来的那个不是你。',
+    say:'心魔从未骗你，它只是讲了实话。',
+    x:'你还站着，还呼吸，还在往前走。只是从那一天起，你杀的人不再有名字。' +
+      '百年后魔道有一个从来不说话的凶名，没人知道那张脸原本是想成仙的。'
+  },
+  LIFE:{
+    t:'寿元枯竭 · 坐化', rank:'下',
+    rankText:'你没有输给敌人，你输给了时间。这是最公平的一种死法。',
+    say:'长生是一笔账，你的账先记满了。',
+    x:'最后那几年里，你的皮肤先干，再是骨头。你始终坐着，不肯躺下。' +
+      '山风穿堂而过，把一具不肯认命的骸骨吹得咯吱作响，像还在数息。'
+  },
+  RETIRE:{
+    t:'归隐 · 云游散修', rank:'中',
+    rankText:'你没能飞升，但你活着放下了。在这条路上，这已经是极少人做到的事。',
+    say:'道途无限，人身有限。知道什么时候停手，也是一种道。',
+    x:'你把修为一点点散进山里，像倒掉一壶放凉了的茶。散尽那日，你发现风是有味道的。' +
+      '后来有人在南边的镇上见过你，替人抓药，给小孩讲故事，从不提山上的事。'
+  },
+  DOOM:{
+    t:'无路可退 · 隐藏', rank:'隐藏',
+    rankText:'六项皆一，命里没给你留余地。你唯一能做的，是拿这条命去撞。',
+    say:'将死之人没有退路，所以每一步都是往前走。',
+    x:'劫云被你从中间撞开一道口子。你不是修上去的，是拿命頂上去的——每一寸都带着血。' +
+      '天光漏下来的那一刻，你回头看自己走过的路：没有一步是稳的，也没有一步是错的。'
+  }
+};
+
+/* ---------------- 六属性 ---------------- */
+var ATTR = [
+  { k:'str', n:'臂力', d:'战斗与体力' },
+  { k:'agi', n:'敏捷', d:'闪避与先手' },
+  { k:'con', n:'根骨', d:'生命与防御' },
+  { k:'wit', n:'悟性', d:'修炼与领悟' },
+  { k:'luk', n:'运气', d:'随机与机缘' },
+  { k:'wil', n:'毅力', d:'心魔与突破' }
+];
+var AK = ['str','agi','con','wit','luk','wil'];
+var ATTR_POINTS = 20;
+var AL = { gender:null, a:{ str:1, agi:1, con:1, wit:1, luk:1, wil:1 } };
+var HURT_MAX = 110;
+
+function tBonus(k){
+  if(!S || !S.talent) return 0;
+  if(k === 'wit' && S.talent === 'memory') return 2;
+  if(k === 'luk' && S.talent === 'fate')   return 2;
+  if(k === 'con' && S.talent === 'iron')   return 2;
+  if(k === 'wil' && S.talent === 'dao')    return 2;
+  return 0;
+}
+function AV(k){ return ((S && S.attr) ? S.attr[k] : 3) + tBonus(k); }
+function avD(k){ return AV(k) - 3; }
+function defMul(){
+  var v = clamp(1 - avD('con')*0.03, 0.7, 1.35);
+  if(S && S.talent === 'iron') v *= 0.9;
+  return v;
+}
+function witMul(){
+  var v = 1 + avD('wit')*0.06;
+  if(S && S.talent === 'spirit') v *= 1.3;
+  if(S && S.talent === 'memory') v *= 1.1;
+  return v;
+}
+function mit(dmg){
+  var v = dmg * defMul() * (1 - doomDef());
+  if(roll(0.03 + avD('agi')*0.015)) v *= 0.45;
+  return Math.max(0, Math.round(v));
+}
+/* 难度：判定整体 -1，前期(炼气/筑基) -2，后期不再让 */
+function ease(){ return S.realm <= 1 ? 0.06 : (S.realm === 2 ? 0.04 : 0.01); }
+/* 敌人：整体 -1，前期 -2 */
+function foeMul(m){ return m * (S.realm <= 1 ? 0.88 : 0.97); }
+function alLeft(){
+  var s = 0;
+  for(var i=0;i<AK.length;i++) s += AL.a[AK[i]];
+  return ATTR_POINTS - s;
+}
+
+/* ---------------- 世界观 ---------------- */
+var WORLD = {
+  REALMS: ['炼气','筑基','金丹','元婴','化神','渡劫'],
+  TIERS: ['超一流','一流','二流','三流','散修'],
+  CAMPS: ['正','中立','邪'],
+  RANKS: ['杂役','外门','内门','真传','长老','宗主'],
+  TECH_TIERS: ['黄','玄','地','天']
+};
+var SECTS = {
+  taixu:   { n:'太虚剑宗', camp:'正',   tier:'超一流', path:'剑道', say:'剑者，唯直唯锐。' },
+  xuantian:{ n:'玄天观',   camp:'正',   tier:'一流',   path:'道法', say:'顺天者易，逆天者难。' },
+  danxia:  { n:'丹霞谷',   camp:'正',   tier:'一流',   path:'炼丹', say:'一炉火，半条命。' },
+  haoran:  { n:'浩然书院', camp:'正',   tier:'二流',   path:'儒修', say:'心存浩然，则邪不可干。' },
+  cihang:  { n:'慈航庵',   camp:'正',   tier:'二流',   path:'医修', say:'救人一命，胜造七级浮屠。' },
+  luoxia:  { n:'落霞山门', camp:'正',   tier:'三流',   path:'杂学', say:'能活下来的，都算本事。' },
+  wanbao:  { n:'万宝楼',   camp:'中立', tier:'超一流', path:'商盟', say:'万物皆有价，只看你出不出得起。' },
+  tianji:  { n:'天机阁',   camp:'中立', tier:'一流',   path:'情报', say:'我不问是非，我只卖消息。' },
+  lingshou:{ n:'灵兽山庄', camp:'中立', tier:'二流',   path:'御兽', say:'兽比人可信。' },
+  sanxiu:  { n:'散修盟',   camp:'中立', tier:'三流',   path:'散修', say:'无门无派，命自己挣。' },
+  xuesha:  { n:'血煞门',   camp:'邪',   tier:'超一流', path:'血修', say:'血是这世上最干净的东西。' },
+  wandu:   { n:'万毒谷',   camp:'邪',   tier:'一流',   path:'毒修', say:'毒与药，只差一口。' },
+  youming: { n:'幽冥殿',   camp:'邪',   tier:'一流',   path:'鬼修', say:'死人比活人老实。' },
+  huoxin:  { n:'惑心宗',   camp:'邪',   tier:'二流',   path:'心魔', say:'你的心早就答应我了。' },
+  xiesan:  { n:'邪修散人', camp:'邪',   tier:'散修',   path:'杂学', say:'规矩是给有宗门的人定的。' }
+};
+var TECHNIQUES = {
+  str:{ n:'搬山诀',   d:'以力破法，镇压千钧，最合臂力' },
+  agi:{ n:'惊鸿步',   d:'身如惊鸿，先手先至，最合敏捷' },
+  con:{ n:'不灭金身', d:'血肉成金，刀剑难伤，最合根骨' },
+  wit:{ n:'太虚剑典', d:'以悟入剑，一悟一境，最合悟性' },
+  luk:{ n:'天机术',   d:'窥隙而动，机缘自至，最合运气' },
+  wil:{ n:'镇魔心经', d:'心魔不起，道心不摇，最合毅力' }
+};
+function sectName(id){ return (SECTS[id] || SECTS.sanxiu).n; }
+function sectTag(id){ var s = SECTS[id] || SECTS.sanxiu; return s.n + '（' + s.camp + '·' + s.tier + '·' + s.path + '）'; }
+function techMul(){
+  if(!S || !S.tech) return 1;
+  var g = (S.tech.g === '上' ? 1.2 : (S.tech.g === '下' ? 0.85 : 1));
+  return 1 + [0.08,0.16,0.28,0.45][S.tech.t] * g;
+}
+function techLabel(){
+  return S && S.tech ? (TECHNIQUES[S.tech.k].n + '（' + WORLD.TECH_TIERS[S.tech.t] + '阶·' + S.tech.g + '品）') : '';
+}
+function bestAttr(){ var b = 'str'; for(var i=0;i<AK.length;i++) if(AV(AK[i]) > AV(b)) b = AK[i]; return b; }
+function learnTech(tier, grade){
+  var k = bestAttr();
+  if(!S.tech || tier > S.tech.t || (tier === S.tech.t && grade === '上')) S.tech = { k:k, t:tier, g:grade };
+  return TECHNIQUES[k].n + '（' + WORLD.TECH_TIERS[tier] + '阶·' + grade + '品）';
+}
+
+/* ---------------- 天赋 ---------------- */
+var TALENTS = {
+  guard:  { n:'神秘护道者', tag:'免死一次', d:'致命之际总有人替你挡下——每局只此一次。你不知道那是谁。' },
+  beast:  { n:'兽语',       tag:'通兽',     d:'可与众兽交谈，灵兽妖兽之属不轻犯你，遇兽另有解法。' },
+  lie:    { n:'鉴谎',       tag:'辨伪',     d:'任何人开口，你都能听出话里哪一处是虚的。' },
+  charm:  { n:'异性缘',     tag:'人缘',     d:'与异性相处如鱼得水，好感增长远快于常人。' },
+  rich:   { n:'家财万贯',   tag:'财',       d:'开局自带一笔横财，鬼市与拍卖场上占尽便宜。' },
+  memory: { n:'过目不忘',   tag:'悟性+2',   d:'典籍一阅即通，悟性判定 +2，修炼略快。' },
+  fate:   { n:'福缘深厚',   tag:'运气+2',   d:'机缘常自寻上门，运气判定 +2，路上多遇好事。' },
+  iron:   { n:'铁骨',       tag:'根骨+2',   d:'骨头比常人硬三分，根骨判定 +2，伤势再减一成。' },
+  dao:    { n:'道心通明',   tag:'毅力+2',   d:'心魔难侵，毅力判定 +2，道心不易动摇。' },
+  spirit: { n:'天生灵体',   tag:'修炼+30%', d:'生来亲近灵气，修炼速度快三成，破关也略容易。' },
+  doomed: { n:'将死之人，无路可退', tag:'彩蛋·唯一', d:'伤越重，出手越狠（最高 2.5 倍）、皮越硬（最多减伤六成），出手还能吸回两成半的伤；命剩不到两成时更甚，且每场战斗有一次不肯死。' }
+};
+var TAL_KEYS = ['guard','beast','lie','charm','rich','memory','fate','iron','dao','spirit'];
+function hasTal(k){ return !!(S && S.talent === k); }
+function talName(){ return (S && S.talent && TALENTS[S.talent]) ? TALENTS[S.talent].n : '无'; }
+function pickTalent(k){
+  if(k === 'doomed' && !S.easterEgg) return;          /* 特殊天赋只属于彩蛋模式 */
+  if(k !== 'doomed' && S.easterEgg) return;           /* 彩蛋模式不与常规天赋同选 */
+  S.talent = k;
+  if(k === 'rich') S.stone += 20;
+  save();
+}
+
+/* ---------------- 彩蛋 · 将死之人 ---------------- */
+function allOnes(){
+  for(var i=0;i<AK.length;i++) if(AL.a[AK[i]] !== 1) return false;
+  return true;
+}
+function eggMode(){ return !!(S && S.easterEgg); }
+function doomOn(){ return hasTal('doomed'); }
+function hpPct(){ return clamp((HURT_MAX - S.hurt)/HURT_MAX, 0, 1); }   /* 越低越接近死 */
+function doomLow(){ return hpPct() < 0.2; }
+function doomMul(){                                     /* 伤越重，出手越狠 */
+  if(!doomOn()) return 1;
+  var v = 1 + (1 - hpPct()) * 1.5;
+  if(doomLow()) v *= 1.2;
+  return Math.min(2.5, v);
+}
+function doomDef(){                                     /* 伤越重，皮越硬 */
+  if(!doomOn()) return 0;
+  var v = (1 - hpPct()) * 0.6;
+  if(doomLow()) v *= 1.2;
+  return Math.min(0.6, v);
+}
+function doomSiphon(dealt){ if(doomOn()) hurt(-Math.round(dealt * 0.25)); }
+function doomArm(){ if(doomOn()) S.f.doomWard = 0; }     /* 每场战斗重新给一次 */
+function doomWard(){
+  if(!doomOn() || S.f.doomWard) return false;
+  S.f.doomWard = 1;
+  S.hurt = HURT_MAX - 1;                                /* 留一点命 */
+  note('<p>这一下本该把你打死。可你连站都站不稳，偏偏还站着——胸口那点热气就是不肯散。</p>' +
+       '<p>（将死之人：本场战斗留你一命。伤势已至垂死。）</p>', 'bad');
+  return true;
+}
+function eggFoeMul(m){ return m * (eggMode() ? 1.12 : 1); }   /* 彩蛋：敌人属性 +1（约一成） */
+function eggAsk(){
+  S.easterEgg = true; CUR = [];
+  S.scene = 'EGG_CONFIRM'; save(); render();
+}
+/* 彩蛋确认：属性按六项皆一落定，天赋面板只留特殊天赋 */
+function eggConfirm(){
+  if(!AL.gender || !allOnes()) return;
+  S.easterEgg = true;
+  S.gender = AL.gender;
+  S.attr = { str:1, agi:1, con:1, wit:1, luk:1, wil:1 };
+  S.life = 80 + S.attr.con * 2;
+  S.cast = genCast();
+  S.npcIdx = 0; S.npcCd = 2 + Math.floor(rnd()*2);
+  S.f.doomWard = 0;
+  S.scene = 'TALENT'; CUR = [];
+  save(); render();
+}
+function eggInfo(){
+  if(S.ended) return;
+  S.back = S.scene; CUR = []; S.scene = 'EGGINFO'; save(); render();
+}
+function doomFortune(){                                  /* 彩蛋：机缘略多 */
+  if(!eggMode() || S.ended) return;
+  if(rnd() < 0.14){
+    if(rnd() < 0.5){ gain(40); note('<p>路边有一具刚凉的尸首，手边还攥着半株灵草。你把它掰下来收走了。</p><p>修为 +40。</p>', 'good'); }
+    else { stone(4); note('<p>你从一具旧尸身上摸出四块灵石。他的死相很难看，你没多看。</p><p>灵石 +4。</p>', 'good'); }
+  }
+}
+
+/* ---------------- 人物名册（可攻略角色，不预设敌对） ---------------- */
+var XING = ['萧','苏','谢','云','江','沈','陆','白','裴','顾','秦','柳'];
+var MING_M = ['决明','无咎','砚舟','拂衣','长庚','听雪','青崖','归远','敬之','照微'];
+var MING_F = ['怜霜','清辞','昭昭','扶苏','听澜','南枝','拾光','素衣','明棠','衔玉'];
+var CAST_DEF = [
+  { id:'jian', role:'剑修', sect:'taixu', origin:'剑冢里捡回来的孤儿，师门任务不断',
+    likes:'好剑、烈酒、有话直说', taboo:'谎言、仗势欺人',
+    line:'剑出鞘不为杀人，是为了让人把话说完。' },
+  { id:'shang', role:'商盟', sect:'wanbao', origin:'万宝楼外柜的少东家，走货走遍十三州',
+    likes:'奇货、成色好的灵石、守约的人', taboo:'赖账、毁契',
+    line:'这世上没有买不到的东西，只有出不起价的客人。' },
+  { id:'xie', role:'邪修', sect:'xuesha', origin:'血煞门旁支，靠替人杀人换功法',
+    likes:'痛快、坦率、带血的东西', taboo:'怜悯、说教',
+    line:'别跟我讲道理，我只认强弱。' },
+  { id:'tong', role:'同门', sect:'luoxia', origin:'也是杂役出身，靠一条命熬上来的',
+    likes:'旧物、草药、同乡', taboo:'背叛、欺瞒',
+    line:'我们这种人，能信的只有自己爬过的路。' }
+];
+function makeNpc(d, g, used){
+  var pool = (g === '男') ? MING_M : MING_F, name, guard = 0;
+  do {
+    name = XING[Math.floor(rnd()*XING.length)] + pool[Math.floor(rnd()*pool.length)];
+    guard++;
+  } while(used[name] && guard < 60);
+  used[name] = 1;
+  var a = { str:1, agi:1, con:1, wit:1, luk:1, wil:1 }, left = ATTR_POINTS - 6, k;
+  while(left > 0){ k = AK[Math.floor(rnd()*AK.length)]; if(a[k] < 10){ a[k]++; left--; } }
+  return {
+    id:d.id, role:d.role, name:name, gender:g, sect:d.sect, origin:d.origin,
+    likes:d.likes, taboo:d.taboo, line:d.line, attr:a,
+    realm:0, bond:0, guard:10, stage:0, met:0, alive:1, mate:0, duels:0, events:0, f:{}
+  };
+}
+function genCast(){
+  var used = {}, out = [], fem = (S.gender === '女'), i, g;
+  for(i=0;i<CAST_DEF.length;i++){
+    if(i === 0 || i === 1) g = fem ? '男' : '女';   /* 前两位必为异性，首位为核心角色 */
+    else g = (rnd() < 0.5 ? '男' : '女');
+    out.push(makeNpc(CAST_DEF[i], g, used));
+  }
+  return out;
+}
+function coreNpc(){ return (S && S.cast && S.cast[0]) ? S.cast[0] : null; }
+function npcAt(i){ return (S && S.cast && S.cast[i]) ? S.cast[i] : coreNpc(); }
+function npcPw(n){ return !n ? 1 : RM[clamp(n.realm,0,4)].pw * 1.08 * (1 + (n.attr.str-3)*0.03); }
+function npcGrow(n){ if(n && n.alive) n.realm = clamp(S.realm + 1, 0, 4); }
+function npcCamp(n){ return (SECTS[n.sect] || SECTS.sanxiu).camp; }
+function bondAdd(n, v){
+  if(!n) return;
+  if(v > 0 && n.gender !== S.gender && hasTal('charm')) v = Math.round(v * 1.5);
+  n.bond = clamp(n.bond + v, -100, 100);
+  if(v > 0) n.guard = clamp(n.guard - Math.round(v * 0.4), 0, 100);
+  if(v < 0) n.guard = clamp(n.guard + Math.round(-v * 0.5), 0, 100);
+}
+function guardAdd(n, v){
+  if(!n) return;
+  n.guard = clamp(n.guard + (v > 0 ? Math.round(v * 1.3) : v), 0, 100);   /* 敌意比好感积得快 */
+  if(v > 0) n.bond = clamp(n.bond - Math.round(v * 0.3), -100, 100);
+}
+function relLabel(n){
+  if(!n) return '';
+  if(n.mate) return '道侣';
+  if(!n.alive) return '已死';
+  if(n.guard >= 85) return '敌对';
+  if(n.guard >= 60) return '戒备';
+  if(n.bond >= 75) return '心动';
+  if(n.bond >= 50) return '信任';
+  if(n.bond >= 25) return '欣赏';
+  if(n.bond >= 5) return '相识';
+  if(n.guard >= 40) return '冷淡';
+  return '陌生';
+}
+function lieHint(n){
+  if(!hasTal('lie') || !n) return '';
+  var t;
+  if(n.guard >= 60) t = '他说「各走各路」时指尖在剑柄上收了一下——这句是假的。';
+  else if(n.bond >= 50) t = '他说「顺手而已」，可你听得出，这不是顺手。';
+  else if(n.bond >= 20) t = '他讲的都是真的，只是漏了一段没说。';
+  else t = '他没有骗你。真话有时候比假话更难接。';
+  return '<p class="lie">【鉴谎】' + t + '</p>';
+}
+function npcCard(n){
+  if(!n) return '';
+  var s = '<div class="rcard"><div class="rc-h"><span style="color:#c9a9e6">' + n.name + '（' + n.gender + '·' + n.role + '）</span>' +
+          '<span>' + sectTag(n.sect) + '　' + RM[clamp(n.realm,0,4)].n + '</span></div>' +
+          '<div class="rc-a"><i>关系 ' + relLabel(n) + '</i><i>好感 ' + n.bond + '</i><i>戒备 ' + n.guard + '</i>' +
+          '<i>喜好 ' + n.likes + '</i><i>忌讳 ' + n.taboo + '</i></div><div class="rc-a">';
+  for(var i=0;i<ATTR.length;i++) s += '<i>' + ATTR[i].n + ' ' + n.attr[ATTR[i].k] + '</i>';
+  s += '</div><div class="rc-p">出身：' + n.origin + '　·　其战力 ' + Math.round(foeMul(npcPw(n))) +
+       '　·　你的战力 ' + Math.round(myPw()) + '</div>' + lieHint(n) + '</div>';
+  return s;
+}
+function npcByScene(){
+  var n = (S.cast && S.cast[S.npcIdx]) ? S.cast[S.npcIdx] : coreNpc();
+  return n;
+}
+function npcLine(n){ return '<p style="color:#9aa7bb">' + n.name + '：「' + n.line + '」</p>'; }
+
+/* ---------------- 状态 ---------------- */
+var S, CUR = [];
+
+function newGame(){
+  S = {
+    realm:0, qi:0, stone:12, heart:60, life:100, hurt:0,
+    it:{ heal:0, calm:0, pill:0 },
+    f:{}, scene:'CREATE', back:'s1', news:'', last:'', lastKind:'',
+    gender:null, attr:null, talent:null, tech:null, cast:null, easterEgg:false,
+    npcIdx:0, npcKey:'', npcCd:2, pending:null,
+    years:0, ended:null, tail:'', fights:0, wins:0
+  };
+  AL = { gender:null, a:{ str:1, agi:1, con:1, wit:1, luk:1, wil:1 } };
+  CUR = [];
+  save(); render();
+}
+
+function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+function rnd(){ return Math.random(); }
+function roll(p){ return rnd() < clamp(p + avD('luk')*0.02 + ease(), 0.04, 0.96); }
+function pct(p){ return Math.round(clamp(p + avD('luk')*0.02 + ease(),0.04,0.96)*100) + '%'; }
+
+/* ---------------- 数值操作 ---------------- */
+function gain(n){
+  n = n > 0 ? n * techMul() : n;
+  S.qi = Math.max(0, S.qi + Math.round(n));
+}
+function stone(n){ S.stone = Math.max(0, S.stone + Math.round(n)); }
+function heart(n){
+  if(n < 0){
+    n = Math.round(n * (1 - avD('wil')*0.045) * (hasTal('dao') ? 0.85 : 1));
+  }
+  S.heart = clamp(S.heart + n, 0, 100);
+}
+function hurt(n){ S.hurt = clamp(S.hurt + n, 0, HURT_MAX); }
+function years(n){ S.life = S.life - n; S.years += n; }
+function note(t, kind){ S.last = t; S.lastKind = kind || ''; }
+
+function myPw(){
+  var base = RM[S.realm].pw;
+  var v = base * (1 - S.hurt/190) * (0.72 + S.heart/230);
+  if(S.f.魔功) v *= 1.3;
+  if(S.f.灵根) v *= 1.12;
+  v *= 1 + avD('str')*0.035;
+  if(S.tech) v *= 1 + [0.03,0.06,0.10,0.16][S.tech.t];
+  v *= doomMul();
+  return Math.max(2, v);
+}
+function odds(e){
+  var a = myPw() * (1 + avD('agi')*0.025);
+  return clamp(a/(a+e), 0.04, 0.95);
+}
+
+/* ---------------- 存档 ---------------- */
+function save(){
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){}
+}
+function load(){
+  try{
+    var raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    var o = JSON.parse(raw);
+    if(!o || !o.scene || !SCENES[o.scene]) return false;
+    S = o;
+    S.it = S.it || {heal:0,calm:0,pill:0};
+    S.f = S.f || {};
+    if(!S.attr){ S.attr = { str:3, agi:3, con:3, wit:3, luk:3, wil:3 }; S.gender = S.gender || '男'; }
+    if(S.gender === undefined || S.gender === null) S.gender = '男';
+    if(S.talent === undefined) S.talent = null;      /* 旧存档：无天赋 */
+    if(S.easterEgg === undefined) S.easterEgg = false;
+    if(S.f) S.f.doomWard = 0;
+    if(S.tech === undefined) S.tech = null;
+    if(!S.cast && S.scene !== 'CREATE'){
+      S.cast = genCast();
+      if(S.rival){                                    /* 旧版存档的对手字段 -> 名册首位，好感/戒备换算 */
+        var r = S.rival, n0 = S.cast[0], fv = r.fav || 0;
+        n0.name = r.name; n0.gender = r.gender; n0.attr = r.attr;
+        n0.realm = clamp(r.realm, 0, 4);
+        n0.bond = clamp(fv, -100, 100);
+        n0.guard = clamp(60 - fv, 10, 100);
+        n0.met = 1; n0.duels = r.duels || 0;
+      }
+      S.npcIdx = 0;
+    }
+    if(S.cast) for(var ci=0; ci<S.cast.length; ci++){
+      var cn = S.cast[ci];
+      cn.f = cn.f || {}; cn.events = cn.events || 0;
+      if(cn.mate === undefined) cn.mate = 0;
+      if(cn.alive === undefined) cn.alive = 1;
+    }
+    if(S.npcCd === undefined) S.npcCd = 2;
+    if(S.npcKey === undefined) S.npcKey = '';
+    if(S.npcIdx === undefined) S.npcIdx = 0;
+    if(S.pending === undefined) S.pending = null;
+    if(!SCENES[S.scene]) S.scene = 's1';             /* 旧版本已删除的场景 */
+    return true;
+  }catch(e){ return false; }
+}
+function doSave(){ save(); flash('已刻入玉简（本机存档）'); }
+function doReset(){
+  if(confirm('重开一世？前尘尽忘，此身重来。')){
+    try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+    newGame();
+  }
+}
+function flash(t){ S.news = '<p>' + t + '</p>'; S.lastKind=''; render(); }
+
+/* ---------------- 结局 ---------------- */
+function end(key, tail){
+  S.ended = key; S.tail = tail || ''; S.scene = 'END';
+  CUR = []; save(); render();
+  return true;
+}
+/* 神秘护道者：致命时免死一次 */
+function tGuard(){
+  if(!hasTal('guard') || S.f.tg) return false;
+  S.f.tg = 1;
+  S.hurt = Math.min(S.hurt, 80);
+  if(S.heart < 30) S.heart = 30;
+  if(S.life < 10) S.life = 10;
+  note('<p>你不记得自己是怎么活下来的。醒来时伤口被人草草裹过，止血的药还是温的。</p>' +
+       '<p>雪地上有一行脚印，向着山外，看不出是谁的。（神秘护道者：已用去一次。）</p>', 'good');
+  return true;
+}
+function check(){
+  if(S.ended) return true;
+  if(S.hurt >= HURT_MAX){
+    if(doomWard()) return false;                     /* 彩蛋：每场战斗一次不肯死 */
+    if(!S.f.mercy){                                  /* 每局一次：致命改重伤 */
+      S.f.mercy = 1; S.hurt = 86;
+      note('<p>你只剩一口气，视线先黑下去。醒来时伤口被人草草处理过，止血的药还是温的。</p>' +
+           '<p>这世上有人不想你死——只这一次。（保命机会已用去。）</p>', 'bad');
+      return false;
+    }
+    if(tGuard()) return false;
+    return end('DEAD','伤势溃烂入骨，金丹自内里崩碎。你倒在雪里，血很快就被风吹冷了。');
+  }
+  if(S.heart <= 0){
+    if(tGuard()) return false;
+    return end('DEMON','道心散尽的那一刻，你听见自己笑了一声。那笑声不像人。');
+  }
+  if(S.life <= 0){
+    if(tGuard()) return false;
+    return end('LIFE','寿元燃尽，皮肉先枯，再是骨。你坐着，成了一具不肯倒下的骸骨。');
+  }
+  return false;
+}
+
+/* ---------------- 历练动作 ---------------- */
+function cultivate(){
+  if(S.ended) return;
+  years(8); hurt(4);
+  var g = Math.round(25 * (S.realm + 1) * witMul());
+  gain(g);
+  note('<p>你封了洞口，一坐八年。洞外草木枯荣八次，你只记得丹田里那点热气，一寸一寸往骨头缝里钻。</p><p>修为 +' + g + '，寿元 -8，伤势 +4。</p>', 'warn');
+  if(check()) return;
+  save(); render();
+}
+function healSeclude(){
+  if(S.ended) return;
+  years(4); hurt(-22); heart(2);
+  note('<p>你把经脉里的淤血一点点逼出来，四年里只做这一件事。伤没好透，但能动手了。</p><p>寿元 -4，伤势 -22，道心 +2。</p>', 'good');
+  if(check()) return;                                    /* 寿元可能就此见底 */
+  save(); render();
+}
+function absorb(){
+  if(S.ended || S.stone < 1) return;
+  stone(-1); hurt(3);
+  var g = Math.round(16 * (S.realm + 1) * witMul());
+  gain(g);
+  note('<p>你捏碎一块灵石，灵气如针，顺着经脉扎进来。痛快，也疼。</p><p>灵石 -1，修为 +' + g + '，伤势 +3。</p>', 'warn');
+  if(check()) return;
+  save(); render();
+}
+function qiByCult(){ return Math.round(25 * (S.realm + 1) * witMul()); }
+function qiByStone(){ return Math.round(16 * (S.realm + 1) * witMul()); }
+function eatHeal(){
+  if(S.ended || S.it.heal < 1) return;
+  S.it.heal--; hurt(-40); heart(2);
+  note('<p>疗伤丹入喉即化，断骨接上时发出细响。你咬着牙没叫出声。</p><p>伤势 -40。</p>', 'good');
+  save(); render();
+}
+function eatCalm(){
+  if(S.ended || S.it.calm < 1) return;
+  S.it.calm--; heart(12); hurt(-5);
+  note('<p>静心丹压下心头翻涌的杂念。你重新数起了呼吸。</p><p>道心 +12。</p>', 'good');
+  save(); render();
+}
+function goBreak(){
+  if(S.ended || !canBreak()) return;
+  var back = S.scene;
+  if(back === 'MEET' || back === 'CAST' || back === 'NPC') back = S.pending || 's1';
+  if(back === 'BREAK' || back === 'CREATE' || back === 'TALENT') back = 's1';
+  S.back = back; S.last=''; S.news='';
+  S.scene = 'BREAK'; save(); render();
+}
+function canBreak(){
+  return !S.ended && S.realm < 4 && S.qi >= RM[S.realm].need;
+}
+function canBreakBtn(){ return canBreak() && S.scene !== 'BREAK'; }
+function breakP(bonus){
+  return clamp(0.48 + S.heart/290 - S.hurt/210 + (bonus||0) - S.realm*0.04
+               + avD('wit')*0.015 + avD('wil')*0.02 + (hasTal('spirit') ? 0.06 : 0), 0.08, 0.92);
+}
+function doBreak(bonus, pill){
+  if(S.ended) return;
+  if(S.realm >= 4 || S.qi < RM[S.realm].need) return;   /* 修为不足或已至化神，冲不上去 */
+  if(pill && S.it.pill > 0){ S.it.pill--; }
+  var p = breakP(bonus), ok = roll(p), nx = RM[S.realm + 1];
+  if(ok){
+    S.realm++;
+    gain(-Math.min(S.qi, RM[S.realm-1].need));
+    hurt(-12); heart(8);
+    var addl = RM[S.realm].life;
+    S.life += addl;
+    if(S.f.魔功) heart(-6);
+    npcGrow(coreNpc());
+    note('<p>冲关那一瞬，天地像被人从中间撕开。你听见自己周身三百六十个窍穴同时炸响，灵气灌顶而下——成了。</p>' +
+         '<p>你入 <b>' + RM[S.realm].n + '</b>，寿元 +' + addl + '，伤势 -12，道心 +8。</p>' +
+         (S.realm>=3?'<p>劫云在你头顶聚了三日，终究没落下来。它记住了你的气息。</p>':''), 'good');
+  }else{
+    hurt(13); heart(-6);
+    gain(-Math.round(S.qi * 0.22));
+    years(3);
+    note('<p>气机在关隘处炸开。你喷出一口黑血，经脉像被人拿钝刀来回锯了三遍。冲关失败。</p><p>伤势 +13，道心 -6，修为倒退，寿元 -3。</p>', 'bad');
+    if(S.realm >= 1 && rnd() < 0.05 + S.realm*0.02 - avD('luk')*0.006){
+      if(tGuard()) { if(!check()) { save(); render(); } return; }
+      return end('DEMON','走火入魔。你在失控的第三天睁开眼，瞳孔已经变成了竖的。这具身体还记得怎么呼吸，却不再记得为什么活着。');
+    }
+  }
+  if(check()) return;
+  save(); render();
+}
+
+/* ==========================================================================
+   场景
+   ========================================================================== */
+var SCENES = {
+
+/* ---------------------------------------------------------------- 1 */
+s1:{
+  t:'青石村 · 测灵根',
+  x:function(){
+    return '<p>测灵石照出五色杂光，又混又浊。执事把手收回去，一句「五灵根，废材」就把你的命定了。</p>' +
+           '<p>' + SECTS.taixu.n + '、' + SECTS.xuantian.n + '那样的名门，三年一度在州城开山收徒，只取三灵根以上；' +
+           '轮到' + SECTS.luoxia.n + '这种三流小宗来村里，才轮得到你。三流宗门也有三流宗门的规矩：' +
+           '杂役、外门、内门、真传，一层压一层，压到最后连名字都不剩。</p>' +
+           '<p>青石村的雨落下来，把台阶上的脚印冲得干干净净。你只赶得上这一次。</p>' +
+           '<p>你十五岁，寿元百载。若入不得道，这辈子就只能烂在这座山里，连一块像样的墓碑都留不下。</p>';
+  },
+  c:function(){ return [
+    { t:'跪在阶下，求一个杂役的名分',
+      h:'安稳，也卑微：道心 +6，灵石 +1，寿元 -2',
+      do:function(){ S.f.杂役=1; heart(6); stone(1); years(2);
+        note('<p>你在雨里跪了两个时辰。执事扔下一块木牌：「去柴房。」</p>', ''); },
+      go:'s2' },
+    { t:'孤身进后山，自寻一线机缘',
+      h:'凶险：修为 +34，伤势 +14，寿元 -6',
+      do:function(){ S.f.野修=1; gain(34); hurt(14); years(6);
+        note('<p>你在瘴气里走了七天，靠嚼树皮活着回来，身上多了三道见骨的伤。但你捡到了一枚未化的兽丹。</p>', 'warn'); },
+      go:'s2' },
+    { t:'割腕血祭山脚古碑，以命换道',
+      h:'代价极重：修为 +52，道心 -12，伤势 +18，寿元 -8',
+      do:function(){ S.f.血誓=1; gain(52); heart(-12); hurt(18); years(8);
+        note('<p>血渗进碑文那夜，你梦见有人在很远的地方叫你的名字。醒来时掌心的伤口结成了暗红的符。</p>', 'bad'); },
+      go:'s2' }
+  ]; }
+},
+
+/* ---------------------------------------------------------------- 2 */
+s2:{
+  t:'落霞山门 · 外门试炼',
+  x:function(){
+    var a;
+    if(S.f.野修) a = '<p>你没有名分，只是在山门外的岩缝里搭了个窝。守山弟子认得你那张脸——那个不肯走的野修。</p>';
+    else if(S.f.血誓) a = '<p>掌心的血符再没消过。你成了落霞山门最底层的杂役：劈柴、挑水、扫剑坪。三年过去，你连丹田那口气都没引出来。</p>';
+    else a = '<p>你成了落霞山门最底层的杂役。三年过去，你连丹田那口气都没引出来。</p>';
+    return a +
+      '<p>这一日山门开外门试炼。后山药圃缺人采药，禁地外墙新裂了一道缝，而同期入门的弟子，袖子里都揣着家里送来的灵药。</p>' +
+      '<p>山道上有' + SECTS.haoran.n + '的弟子路过，衣上绣着云纹，看你们这些三流宗门的杂役，像看一堆杂草。' +
+      '走在最后的那个还回头笑了一句：「落霞山门？没听过。」</p>' +
+      '<p>山门的规矩很简单：谁能在试炼里拿出东西，谁就能留下。</p>';
+  },
+  c:function(){ return [
+    { t:'老实采药，换几块灵石和一口饱饭',
+      h:'灵石 +5，修为 +22，道心 +6，寿元 -4',
+      do:function(){ stone(5); gain(22); heart(6); years(4); S.f.老实=1;
+        note('<p>你在药圃里蹲了四个月，指甲缝里全是泥。执事给了你五块下品灵石，说：明年还来。</p>', ''); },
+      go:'s3' },
+    { t:'趁夜潜入禁地，偷阅《筑基真诀》残页',
+      h:'成则修为大涨并悟功法，败则逐出山门',
+      do:function(){
+        years(4);
+        if(roll(0.42 + S.heart/320 + (hasTal('memory') ? 0.12 : 0))){
+          S.f.真诀=1; gain(78); stone(2);
+          var tn = learnTech(0, hasTal('memory') ? '上' : '中');
+          note('<p>残页上只有七行字，你背了整整一夜。那是你此生第一次知道，气要往哪里走。</p>' +
+               '<p>修为 +78，灵石 +2。你从中悟出 <b>' + tn + '</b>。</p>', 'good');
+        }else{
+          hurt(26); heart(-8); S.f.被察觉=1;
+          note('<p>第三夜有人守在墙外。你被押到剑坪上打了三十鞭，逐出内墙，只留一口气。</p><p>伤势 +26，道心 -8。</p>', 'bad');
+        }
+      }, go:'s3' },
+    { t:'抢了同门的灵药，换灵石',
+      h:'灵石 +9，道心 -15，伤势 +12，寿元 -4',
+      do:function(){ S.f.恶名=1; stone(9); heart(-15); hurt(12); years(4);
+        note('<p>那弟子比你小两岁，被你按住时一直在哭。你把灵药揣进怀里，没敢回头看他的脸。</p>', 'bad'); },
+      go:'s3' }
+  ]; }
+},
+
+/* ---------------------------------------------------------------- 3 */
+s3:{
+  t:'万骨窟 · 血灵草',
+  x:function(){
+    return '<p>血灵草长在万骨窟的骨缝里，根须缠着死人的指骨，摘下时会发出很低的哭声。</p>' +
+           '<p>守草的东西从骨堆里撑起半个身子：骨甲尸煞。前朝修士的怨念在这里养了三百年，它已经没有脸了，只剩一具还在动的甲。</p>' +
+           '<p>窟口立着半块残碑，是' + SECTS.youming.n + '的修士立的——鬼修当年在这里养过东西，后来连他们也撤了。</p>' +
+           '<p>你没有退路。这一株草能换你三个月的用度，也能换你一条命。</p>' +
+           '<p class="endstat">你的战力：<b>' + Math.round(myPw()) + '</b>　尸煞煞力：<b>' + Math.round(eggFoeMul(foeMul(RM[S.realm].pw*1.05))) + '</b></p>';
+  },
+  c:function(){
+    var o = [];
+    o.push({ t:'结印强攻，以命换草', h:'正面死战',
+      do:function(){ clash(RM[S.realm].pw*1.05, 0, '尸煞'); }, go:'s4' });
+    o.push({ t:'先以灵石布引煞阵，乱它骨甲',
+      h:'灵石 -3，胜算大增', need:function(){ return S.stone >= 3; }, why:'灵石不足三块',
+      do:function(){ stone(-3); note('<p>三块灵石埋进骨堆，煞气被抽乱了一瞬。就这一瞬。</p>', ''); clash(RM[S.realm].pw*1.05, 0.20, '尸煞'); },
+      go:'s4' });
+    if(hasTal('beast')) o.push({ t:'以兽语唤醒骨窟深处那点残魂', h:'兽语天赋：不必动手',
+      do:function(){ years(3); gain(70); S.f.草=1; stone(2); heart(5);
+        note('<p>你蹲下来，对着骨堆低声说了几句。骨头深处传来一阵很闷的响动，像有什么东西翻了个身，又睡回去了。</p>' +
+             '<p>尸煞慢慢退回骨堆里。血灵草归你了。</p>', 'good'); }, go:'s4' });
+    o.push({ t:'摘草即走，不与它纠缠', h:'赌命，赌手快',
+      do:function(){
+        years(3);
+        if(roll(0.46 + S.heart/400)){
+          gain(66); S.f.草=1; hurt(8);
+          note('<p>你扑进骨堆，一把掐断草茎。身后骨甲擦着你的背划过去，撕开一道血口。</p><p>血灵草到手。</p>', 'good');
+        }else{
+          hurt(30); gain(10);
+          note('<p>草还在指缝里，骨爪已经从你左肩穿了过去。你滚下窟口，草碎在半途。</p><p>伤势 +30。</p>', 'bad');
+        }
+        if(check()) return;
+      }, go:'s4' });
+    return o;
+  }
+},
+
+/* ---------------------------------------------------------------- 4 */
+s4:{
+  t:'鬼市 · 三更',
+  x:function(){
+    return '<p>鬼市开在山腹里，三更开，五更散，不属任何宗门。摊上摆着断剑、人皮符，和来路不明的丹丸。</p>' +
+           '<p>这里有' + SECTS.wanbao.n + '的暗柜，也有' + SECTS.tianji.n + '的耳朵。前者只认灵石，后者只认消息——' +
+           '两家的规矩是一样的：不问来路，不问去处。</p>' +
+           '<p>鬼医把三枚丹推到灯下：疗伤丹、静心丹、破障丹。「灵石在这儿不是钱，是你命的一条尾巴。你想拿哪条来换？」</p>' +
+           '<p>你身上有 ' + S.stone + ' 块灵石。' + (hasTal('rich') ? '（家财万贯：你出手阔绰，鬼医的分量给得足。）' : '') + '</p>';
+  },
+  c:function(){
+    var o = [], rich = hasTal('rich');
+    if(S.f.草) o.push({ t:'售出血灵草', h:'灵石 +' + (rich ? 19 : 13) + '，修为 +12，寿元 -4',
+      do:function(){ years(4); S.f.草=0; stone(rich ? 19 : 13); gain(12);
+        note('<p>鬼医掂了掂草，笑了一声：「三百年份，可惜摘早了。」他数出' + (rich ? 19 : 13) + '块灵石，没多看一眼。</p>', 'good'); },
+      go:'s5' });
+    o.push({ t:'替鬼医试丹，以肉身验药', h:'灵石 +9，破障丹 +1，伤势 +22，道心 -6，寿元 -4',
+      do:function(){ years(4); stone(9); hurt(22); heart(-6); S.it.pill++;
+        note('<p>第一炉丹下去，你在地上抽搐了半个时辰；第二炉，你听见自己的心跳漏了半拍。</p><p>你活着拿到了九块灵石和一枚破障丹。</p>', 'bad'); },
+      go:'s5' });
+    o.push({ t:'买下疗伤丹与静心丹',
+      h:'灵石 -' + (rich ? 4 : 7) + '，疗伤丹 ×' + (rich ? 2 : 1) + '，静心丹 ×' + (rich ? 2 : 1) + '，寿元 -3',
+      need:function(){ return S.stone >= (rich ? 4 : 7); }, why:'灵石不足' + (rich ? '四' : '七') + '块',
+      do:function(){ years(3); stone(-(rich ? 4 : 7)); S.it.heal += rich ? 2 : 1; S.it.calm += rich ? 2 : 1;
+        note('<p>你数出' + (rich ? 4 : 7) + '块灵石。鬼医把丹推过来，顺手收走了你桌上那盏灯——鬼市不打灯，规矩。</p>' +
+             '<p>疗伤丹 +' + (rich ? 2 : 1) + '，静心丹 +' + (rich ? 2 : 1) + '。</p>', 'good'); },
+      go:'s5' });
+    if(S.heart >= 50) o.push({ t:'签血契，借灵石', h:'灵石 +20，寿元 -12，道心 -5，欠下血债',
+      do:function(){ years(12); stone(20); heart(-5); S.f.债=1;
+        note('<p>你在契书上按下血指印。对面的人收了契，只说一句：「三年后我来取。」</p><p>灵石 +20。你还没想明白他凭什么这么笃定。</p>', 'warn'); },
+      go:'s5' });
+    else o.push({ t:'替鬼市杀一个人，换一半赏钱', h:'灵石 +16，道心 -18，伤势 +16，寿元 -4',
+      do:function(){ years(4); stone(16); heart(-18); hurt(16); S.f.血债=1;
+        note('<p>那是个筑基初期的散修，住在一座没人知道的山神庙里。你在他打坐时下的手，很快。</p><p>灵石 +16。你手上第一次沾了修士的血。</p>', 'bad'); },
+      go:'s5' });
+    return o;
+  }
+},
+
+/* ---------------------------------------------------------------- 5 */
+s5:{
+  t:'心魔劫 · 旧忆噬心',
+  x:function(){
+    return '<p>夜里打坐，丹田深处忽然亮起一张脸。</p>' +
+           '<p>是村口那个总给你留半个馍的老妇，是试炼时被你抢了灵药的同门，是血祭古碑那夜、叫着你名字的声音。它们一个一个浮上来，排成一条路。</p>' +
+           '<p>心魔不与你动手。它只跟你讲道理：道途这么苦，你凭什么逆着天走？</p>' +
+           '<p>你的道心：<b>' + S.heart + '</b>。</p>';
+  },
+  c:function(){ return [
+    { t:'拔剑斩魔', h:'以道心为刃，成则道心大涨，败则心魔反噬',
+      do:function(){
+        years(3);
+        if(roll(0.34 + S.heart/230 + avD('wil')*0.03)){
+          heart(20); gain(60);
+          note('<p>剑光过处，那张脸碎了一半，还在笑。你一剑一剑劈下去，直到只剩下自己的呼吸声。</p><p>道心 +20，修为 +60。</p>', 'good');
+        }else{
+          heart(-24); hurt(22); gain(20);
+          note('<p>剑锋转过来的那一瞬，你看见了执剑的人是你自己。你没能劈下去。</p><p>道心 -24，伤势 +22。</p>', 'bad');
+        }
+        if(check()) return;
+      }, go:'s6' },
+    { t:'纳魔为道，借魔气强冲关隘', h:'修为 +170，道心 -20，染上魔功',
+      do:function(){
+        years(6); gain(170); heart(-20); S.f.魔功=1;
+        note('<p>你没有斩它。你张开丹田，把它吞了进去。</p><p>气机暴涨，骨头缝里渗出黑气。修为 +170，道心 -20。此后再有人叫你名字，你会先想杀人。</p>', 'bad');
+      }, go:'s6' },
+    { t:'以三十年寿元，换一夜道心清明', h:'寿元 -30，道心 +30，修为 +45',
+      need:function(){ return S.life > 45; }, why:'寿元不足，燃不起这一炷香',
+      do:function(){ years(30); heart(30); gain(45);
+        note('<p>你点了自己三十年的寿元，做成一炷香。烟气升起时，所有脸都退了，只剩下一个干干净净的夜。</p><p>道心 +30。</p>', 'good'); },
+      go:'s6' }
+  ]; }
+},
+
+/* ---------------------------------------------------------------- 6 */
+s6:{
+  t:'雪夜 · 围杀',
+  x:function(){
+    var why = S.f.债 ? '鬼市的人来收那纸血契了。'
+            : S.f.血债 ? '鬼市的人来灭口了——雇你杀人的人，从不需要活着的刀。'
+            : S.f.恶名 ? '当年被你抢了灵药的弟子，如今跟了一个外门执事。'
+            : '你在禁地里背下的那七行字，终究被人认了出来。';
+    return '<p>雪下了一夜。天快亮时，洞外的雪地被踩乱了。</p>' +
+           '<p>' + why + '领头者披着黑斗篷，手里提着一串还在滴血的人头，其中一颗是当年分你半块干粮的老杂役。</p>' +
+           '<p>他们没有喊话，也没有让你交出什么。他们要的是你的命，和其它人的命一样。</p>' +
+           '<p class="endstat">你的战力：<b>' + Math.round(myPw()) + '</b>　来人修为：<b>' + Math.round(eggFoeMul(foeMul(RM[S.realm].pw*1.28))) + '</b></p>';
+  },
+  c:function(){
+    var o = [];
+    if(S.it.heal > 0) o.push({ t:'先服一枚疗伤丹，把伤压下去再动手',
+      h:'疗伤丹 -1，伤势 -40，随后仍是这一战',
+      do:function(){ S.it.heal--; hurt(-40);
+        note('<p>丹入喉即化，断骨接上时发出细响。你咬着牙把气机重新压回丹田。</p><p>伤势 -40。人还在雪里。</p>', 'good'); },
+      go:'s6' });
+    o.push({ t:'提剑出洞，正面迎上去', h:'死战，不退',
+      do:function(){ clash(RM[S.realm].pw*1.28, 0, '黑斗篷'); }, go:'s7' });
+    o.push({ t:'引动洞府地脉残阵，以灵石为薪', h:'灵石 -8，胜算大增',
+      need:function(){ return S.stone >= 8; }, why:'灵石不足八块，点不起阵',
+      do:function(){ stone(-8); note('<p>八块灵石烧成灰，地脉翻起一道土墙，把对方的阵型截成了两段。</p>', ''); clash(RM[S.realm].pw*1.28, 0.22, '黑斗篷'); },
+      go:'s7' });
+    o.push({ t:'弃了洞府与半身修为，遁入雪原', h:'修为大损，伤势 +46，寿元 -8，但能活下去',
+      do:function(){ years(8); gain(-60); hurt(46); heart(-8);
+        note('<p>你自断一截经脉，借着爆开的血气冲进雪里。身后传来冷笑，没人追。他们要的是死人，不是你。</p><p>修为 -60，伤势 +46。</p>', 'bad');
+        if(check()) return; },
+      go:'s7' });
+    return o;
+  }
+},
+
+/* ---------------------------------------------------------------- 7 */
+s7:{
+  t:'雪原尽头 · 逆命碑',
+  x:function(){
+    return '<p>雪原尽头有一处塌了半边的洞府，匾上三个字被风蚀得只剩轮廓：逆命碑。</p>' +
+           '<p>碑上刻着前朝一位修士的遗言——「我以五灵根入道，九百岁化神，一千二百岁兵解。你若与我一样，便取我留下的东西。代价，碑上写着。」</p>' +
+           '<p>你伸手摸上去，碑面是温的，像有人在里面呼吸。</p>';
+  },
+  c:function(){ return [
+    { t:'以五十年寿元，换一副二品灵根', h:'修为 +220，道心 +18，伤势大减，寿元 -50，兼得玄阶功法',
+      need:function(){ return S.life > 65; }, why:'寿元不足五十，碑不收你的命',
+      do:function(){ years(50); gain(220); heart(18); hurt(-45); S.f.灵根=1;
+        var t1 = learnTech(1, '上');
+        note('<p>碑里伸出一只手，按在你的丹田上。你听见自己的骨头被一根根拆开，又一根根装上。</p><p>痛到第三日，你终于分得清什么样的灵气是甜的。</p>' +
+             '<p>修为 +220，道心 +18，伤势 -45，寿元 -50。你不再是废灵根了，并得 <b>' + t1 + '</b>。</p>', 'good');
+        if(check()) return; },
+      go:'s8' },
+    { t:'以道心为祭，换一炉魔道真血', h:'修为 +300，道心 -30，染上魔功，兼得地阶功法',
+      do:function(){ years(6); gain(300); heart(-30); S.f.魔功=1; hurt(-8);
+        var t2 = learnTech(2, '下');
+        note('<p>你把手伸进碑里。有什么东西咬住了你的手腕，往你身子里灌。</p>' +
+             '<p>修为 +300，道心 -30，得 <b>' + t2 + '</b>。你开始觉得血的味道比灵气香。</p>', 'bad'); },
+      go:'s8' },
+    { t:'只取碑上一句心法，不欠因果', h:'修为 +90，道心 +6，兼得地阶下品功法',
+      do:function(){ years(6); gain(90); heart(6);
+        var t3 = learnTech(2, '中');
+        note('<p>你只看了一句：「逆天者，先逆己身。」然后转身出洞，把碑留在身后。</p>' +
+             '<p>修为 +90，道心 +6。这一句你参了六年，得 <b>' + t3 + '</b>。</p>', 'good'); },
+      go:'s8' },
+    { t:'什么也不取，合掌一礼', h:'道心 +10',
+      do:function(){ years(6); heart(10);
+        note('<p>你对着碑行了一礼，什么也没拿。洞外的雪停了，天边有一线很淡的白。</p><p>道心 +10。</p>', 'good'); },
+      go:'s8' }
+  ]; }
+},
+
+/* ---------------------------------------------------------------- 8 */
+s8:{
+  t:'落霞山巅 · 天劫',
+  x:function(){
+    return '<p>劫云压在落霞山脉上，三日不散。方圆千里的修士都退到了百里之外，远远地看着这座山。</p>' +
+           '<p>你站在山巅。这具肉身里，有你偷来的、抢来的、拿命换来的所有东西。它们在你骨头里烧。</p>' +
+           '<p>天要你死，你要逆。</p>' + npcOmen() +
+           '<p class="endstat">境界：<b>' + RM[S.realm].n + '</b>　道心：<b>' + S.heart + '</b>　伤势：<b>' + S.hurt + '</b>　寿元：<b>' + S.life + '</b></p>' +
+           '<p class="endstat">功法：<b>' + (S.tech ? techLabel() : '无') + '</b>　天赋：<b>' + talName() + '</b></p>';
+  },
+  c:function(){
+    var o = [];
+    o.push({ t:'登劫台，以凡骨抗天', h:'化神以上方有一线生机，否则必死',
+      need:function(){ return S.realm >= 3; }, why:'境界不足，登台即死',
+      do:function(){
+        years(3);
+        var rv = 0, cn = coreNpc();
+        if(cn && cn.alive){ rv = (cn.mate ? 0.10 : (cn.bond >= 60 ? 0.08 : (cn.guard >= 75 ? -0.06 : 0))); }
+        var p = clamp(0.12 + (S.realm-3)*0.26 + S.heart/270 - S.hurt/210 + (S.f.灵根?0.06:0) + (S.f.魔功?-0.04:0)
+                      + avD('wit')*0.01 + rv, 0.03, 0.88);
+        S.fights++;
+        if(roll(p)){
+          S.wins++;
+          note('<p>第一道劫雷落下时，你没有躲。第二道，你把修为全灌进脊骨。第三道之后，天上再没有雷——只有光。</p>', 'good');
+          return end('ASCEND','');
+        }else{
+          hurt(70);
+          if(S.f.魔功) return end('DEMON','魔气在劫雷下无所遁形。你体内那炉真血先炸了，人也跟着炸了。天上的云很快散了，像什么都没发生。');
+          return end('DEAD','最后一道劫雷穿胸而过。你听见自己丹田里有什么东西碎了，很轻，像一块玉掉在石头上。');
+        }
+      }, go:null });
+    o.push({ t:'不登劫台，散功兵解，换一世安稳', h:'弃道途，作散修云游',
+      do:function(){ years(5); S.f.兵解=1;
+        note('<p>你把修为一点点从经脉里逼出去。散尽那天，你第一次发现山里的风是有味道的。</p>', '');
+        return end('RETIRE',''); }, go:null });
+    o.push({ t:'合上洞府，去人间做一个凡人', h:'什么也不要了',
+      do:function(){ S.f.归隐=1;
+        note('<p>你封了洞府，把灵石埋在门口，下了山。三年后有人在镇上的药铺看见你，正在给一个孩子称药。</p>', '');
+        return end('RETIRE',''); }, go:null });
+    if(S.f.魔功) o.push({ t:'引魔功入劫，以血撼天', h:'魔道登天，凶险至极',
+      need:function(){ return S.realm >= 3; }, why:'境界不足，魔气撑不到第三道雷',
+      do:function(){
+        years(3);
+        var p = clamp(0.26 + (S.realm-3)*0.22 - S.heart/420, 0.05, 0.7);
+        S.fights++;
+        if(roll(p)){
+          S.wins++;
+          note('<p>你张开双臂，把劫雷当成灵气吞。血从七窍里流出来，你笑着数到第九道。</p>', 'good');
+          return end('ASCEND','');
+        }
+        return end('DEMON','劫雷洗过一遍，魔功反噬，你连自己是谁都忘了。山下的人只看见一团黑气冲上天，再没下来。');
+      }, go:null });
+    if(eggMode()) o.push({ t:'以将死之躯撞开劫云', h:'伤越重，成算越高（隐藏结局）',
+      need:function(){ return S.realm >= 2; }, why:'境界太低，撞上去只是白死',
+      do:function(){
+        years(2);
+        var p = clamp(0.16 + (1-hpPct())*0.95 + S.heart/400 + (S.realm-3)*0.15, 0.05, 0.9);
+        S.fights++;
+        note('<p>你没有登劫台。你从崖边直接跳了上去，迎着第一道雷。</p>' +
+             '<p>（将死之人：此刻伤势 ' + S.hurt + '，成算 ' + pct(p) + '）</p>', 'warn');
+        if(roll(p)){ S.wins++; return end('DOOM',''); }
+        hurt(HURT_MAX);
+        if(!check()){
+          if(tGuard()){ save(); render(); return; }
+          return end('DEAD','劫雷把你从里到外翻了一遍。你落回山巅时，已经不像个人了。');
+        }
+      }, go:null });
+    return o;
+  }
+},
+
+/* ---------------------------------------------------------------- 突破 */
+BREAK:{
+  t:'闭关 · 冲击界关',
+  x:function(){
+    var p = breakP(0);
+    return '<p>你封死洞口，把丹田里所有的气都压向那道关隘。</p>' +
+           '<p>成了，你换一层天地，寿元再续；败了，经脉受损，修为倒退，甚至有走火入魔之险。</p>' +
+           '<p class="endstat">当前：<b>' + RM[S.realm].n + '</b>　修为 <b>' + S.qi + '</b>　道心 <b>' + S.heart + '</b>　伤势 <b>' + S.hurt + '</b></p>' +
+           '<p class="endstat">推演成算：<b>' + pct(p) + '</b>　（服破障丹可再加二成半）</p>';
+  },
+  c:function(){ return [
+    { t:'全力冲关', h:'成算 ' + pct(breakP(0)),
+      need:function(){ return canBreak(); }, why:'修为不足，压不住这道关隘',
+      do:function(){ doBreak(0, false); }, go:function(){ return S.back || 's1'; } },
+    { t:'服破障丹，再冲一次', h:'成算 ' + pct(breakP(0.25)) + '，消耗破障丹 ×1',
+      need:function(){ return S.it.pill > 0 && canBreak(); }, why:S.it.pill > 0 ? '修为不足，压不住这道关隘' : '没有破障丹',
+      do:function(){ doBreak(0.25, true); }, go:function(){ return S.back || 's1'; } },
+    { t:'暂缓，先稳固根基', h:'修为 -20，道心 +6，寿元 -2',
+      do:function(){ gain(-20); heart(6); years(2);
+        note('<p>你把那口气又压回丹田。急不得。至少现在还急不得。</p>', ''); },
+      go:function(){ return S.back || 's1'; } }
+  ]; }
+},
+
+/* ---------------------------------------------------------------- 立身 */
+CREATE:{
+  t:'立身 · 择道之始',
+  x:function(){
+    return '<p>你十五岁，站在青石村的雨里。命还没定——至少在踏进这座山之前，这副身骨还能由你自己分。</p>' +
+           '<p>山脚的老修士说过一句话：五行驳杂者，必得有一项过人之处，才活得下去。你只有二十点，分吧。</p>';
+  },
+  c:function(){ return []; }
+},
+
+MEET:{
+  t:'山门 · 同路之人',
+  x:function(){
+    var n = coreNpc();
+    return '<p>测灵根那日，石阶上还站着另一个人：' + (S.gender==='男' ? '一个同岁的姑娘' : '一个同岁的少年') +
+           '，衣裳比你干净，眼神比你有底气。' + sectTag(n.sect) + '出身，来落霞山门只为了一桩差事。</p>' +
+           '<p>' + (n.gender==='男'?'他':'她') + '看了你一眼，没笑，也没轻视，只把台阶上的位置让开了半步。</p>' + npcCard(n);
+  },
+  c:function(){
+    var n = coreNpc();
+    return [
+      { t:'抱拳通名，先认下这个人', h:'好感 +30，道心 +3',
+        do:function(){ n.met = 1; n.events++; bondAdd(n, 30); heart(3);
+          note('<p>你报上名字。' + n.name + '记住了：「' + n.origin + '——我出身也不比你好。走吧。」</p><p>好感 ' + n.bond + '。</p>', 'good'); },
+        go:'s1' },
+      { t:'冷淡以对，只记下他的门派与境界', h:'戒备 +10，修为 +12',
+        do:function(){ n.met = 1; n.events++; guardAdd(n, 10); gain(12);
+          note('<p>你只点了个头。' + n.name + '也不多话，转身下了台阶。</p><p>戒备 ' + n.guard + '，修为 +12。</p>', 'warn'); },
+        go:'s1' },
+      { t:'替他把那桩差事担下来', h:'好感 +26，寿元 -3，伤势 +6',
+        do:function(){ n.met = 1; n.events++; bondAdd(n, 26); years(3); hurt(6);
+          note('<p>你把差事文书上自己的名字划了，填上他的。执事骂了你半炷香，你一声没吭。</p><p>好感 ' + n.bond + '，寿元 -3。</p>', 'good'); },
+        go:'s1' }
+    ];
+  }
+},
+
+TALENT:{
+  t:'天赋 · 与生俱来的一点东西',
+  x:function(){
+    if(S.easterEgg){
+      return '<p>你身上没有那种东西。</p>' +
+             '<p>六项皆一，灵根驳杂，命薄如纸——别人分的是天赋，你分的是一口气：还剩几口。</p>' +
+             '<p>这条路没有第二个人走过，也没有第二条路可走。</p>';
+    }
+    return '<p>灵根可以分，天赋分不了。每个人生下来都带着一点别人没有的东西，只是多数人一辈子没弄明白自己带的是哪一样。</p>' +
+           '<p>现在，你要认下自己身上那一样。只能选一样，改不了。</p>';
+  },
+  c:function(){
+    var o = [], i;
+    if(S.easterEgg) return [ talOpt('doomed') ];
+    for(i=0;i<TAL_KEYS.length;i++) o.push(talOpt(TAL_KEYS[i]));
+    return o;
+  }
+},
+
+EGG_CONFIRM:{
+  t:'就这样入道？',
+  x:function(){
+    return '<p>你把二十点原封不动地留在那里——六项皆一，一样也不多。</p>' +
+           '<p>执事看了你一眼，什么也没说。测灵石上那点光暗下去的时候，你听见自己心里有个声音说：那就这样吧。</p>' +
+           '<p class="endstat">六项皆一：臂力 1　敏捷 1　根骨 1　悟性 1　运气 1　毅力 1</p>' +
+           '<p class="endstat">你没得选天赋。你只有一条命，和一句话：<b>将死之人，无路可退。</b></p>';
+  },
+  c:function(){ return [
+    { t:'就这样入道', h:'进入彩蛋模式：唯一特殊天赋，敌人更强，机缘更多，另有一处隐藏结局',
+      do:function(){ eggConfirm(); }, go:null },
+    { t:'还是回去重新分点', h:'回到加点面板',
+      do:function(){ S.easterEgg = false; AL.a = { str:1, agi:1, con:1, wit:1, luk:1, wil:1 }; CUR = []; S.scene = 'CREATE'; },
+      go:'CREATE' }
+  ]; }
+},
+
+EGGINFO:{
+  t:'将死之人，无路可退',
+  x:function(){
+    return '<p>这不是天赋，是一道算式：你剩下多少命，就能换多少力。</p>' +
+           '<div class="rcard"><div class="rc-h"><span style="color:#e8b3a6">将死之人，无路可退</span><span>彩蛋 · 唯一特殊天赋</span></div>' +
+           '<div class="rc-a"><i>伤势越重，出手越狠：伤害倍率 1 + (1 − 余命) × 1.5，上限 2.5 倍</i></div>' +
+           '<div class="rc-a"><i>伤势越重，皮越硬：减伤 (1 − 余命) × 0.6，上限 60%</i></div>' +
+           '<div class="rc-a"><i>出手吸血：回复 = 造成伤害 × 0.25，按最终伤害计</i></div>' +
+           '<div class="rc-a"><i>余命低于两成时：以上效果再 +20%，且每场战斗有一次免疫致命伤，只留一口气</i></div></div>' +
+           '<p class="endstat">当前：伤势 <b>' + S.hurt + '</b> / ' + HURT_MAX + '　余命 <b>' + Math.round(hpPct()*100) + '%</b></p>' +
+           '<p class="endstat">此刻伤害倍率 <b>×' + doomMul().toFixed(2) + '</b>　减伤 <b>' + Math.round(doomDef()*100) + '%</b>' +
+           (doomLow() ? '　<b>已入濒死，效果增强</b>' : '') + '</p>';
+  },
+  c:function(){ return [
+    { t:'合上', h:'回到当下', do:function(){}, go:function(){ return castBack(); } }
+  ]; }
+},
+
+CAST:{
+  t:'人物 · 路上遇见的人',
+  x:function(){
+    var s = '<p>修行路上，能记住名字的人不多。</p>', i;
+    for(i=0;i<S.cast.length;i++){
+      var n = S.cast[i];
+      if(!n.met && !n.events) continue;
+      s += npcCard(n);
+    }
+    s += '<p class="endstat">你的门派：<b>落霞山门</b>（正·三流·杂学）　身份：<b>' + WORLD.RANKS[clamp(Math.floor(S.realm*1.2),0,4)] + '</b></p>';
+    s += '<p class="endstat">已修功法：<b>' + (S.tech ? techLabel() : '尚无') + '</b>' + (S.tech ? '　' + TECHNIQUES[S.tech.k].d : '') + '</p>';
+    s += '<p class="endstat">天赋：<b>' + talName() + '</b>' + (S.talent ? '　' + TALENTS[S.talent].d : '　（无）') + '</p>';
+    return s;
+  },
+  c:function(){ return [
+    { t:'合上名册', h:'回到当下', do:function(){}, go:function(){ return castBack(); } }
+  ]; }
+},
+
+NPC:{
+  t:function(){ return npcEv().t; },
+  x:function(){ return npcEv().x(); },
+  c:function(){ return npcEv().c(); }
+},
+
+/* ---------------------------------------------------------------- 结局 */
+END:{
+  t:function(){ return (ENDINGS[S.ended] || ENDINGS.RETIRE).t; },
+  x:function(){
+    var e = ENDINGS[S.ended] || ENDINGS.RETIRE;
+    var rank = e.rank;
+    return '<p>' + e.x + '</p>' + (S.tail ? '<p>' + S.tail + '</p>' : '') + npcEnd() +
+      '<p class="endstat">最终境界：<b>' + RM[S.realm].n + '</b>　修为：<b>' + S.qi + '</b>　灵石：<b>' + S.stone + '</b></p>' +
+      '<p class="endstat">道心：<b>' + S.heart + '</b>　寿元：<b>' + S.life + '</b>　伤势：<b>' + S.hurt + '</b>　行走世间：<b>' + S.years + '</b> 载</p>' +
+      (S.attr ? '<p class="endstat">' + (S.gender==='男'?'男身':'女身') + '　臂力 <b>' + S.attr.str + '</b>　敏捷 <b>' + S.attr.agi +
+        '</b>　根骨 <b>' + S.attr.con + '</b>　悟性 <b>' + S.attr.wit + '</b>　运气 <b>' + S.attr.luk + '</b>　毅力 <b>' + S.attr.wil + '</b></p>' : '') +
+      '<p class="endstat">门派 <b>落霞山门</b>　功法 <b>' + (S.tech ? techLabel() : '无') + '</b>　天赋 <b>' + talName() + '</b></p>' +
+      (S.cast ? '<p class="endstat">' + S.cast.filter(function(x){ return x.met || x.events; }).map(function(x){
+        return x.name + '（' + sectName(x.sect) + '·' + (x.alive ? relLabel(x) : '已死') + '）';
+      }).join('　') + '</p>' : '') +
+      '<p class="endstat">结局评级：<b>' + rank + '</b>　' + e.rankText + '</p>' +
+      '<p class="endstat">' + e.say + '</p>';
+  },
+  c:function(){ return [
+    { t:'重开一世', h:'前尘尽忘，此身重来',
+      do:function(){ newGame(); }, go:null }
+  ]; }
+}
+
+};
+
+/* ---------------- 战斗 ---------------- */
+function clash(enemyPw, bonus, name){
+  enemyPw = eggFoeMul(foeMul(enemyPw));
+  var p = clamp(odds(enemyPw) + (bonus||0), 0.05, 0.95);
+  S.fights++;
+  doomArm();
+  years(5);
+  if(roll(p)){
+    S.wins++;
+    var g = Math.round(60 + 40*p), d = mit(Math.round(15 + 13*(1-p)));
+    gain(g); stone(4); hurt(d); heart(6);
+    doomSiphon(Math.round(enemyPw * doomMul()));
+    note('<p>' + name + '的甲终于裂开。你把剑从它胸腔里拔出来时，骨头碎了一地。</p>' +
+         '<p>你活下来了。修为 +' + g + '，灵石 +4，道心 +6，伤势 +' + d + '，寿元 -5。</p>' + (doomOn() ? '<p>（将死之人：出手 ' + doomMul().toFixed(2) + ' 倍，吸取伤势 ' + Math.round(enemyPw*doomMul()*0.25) + '）</p>' : ''), 'good');
+  }else{
+    var d2 = mit(Math.round(33 + 11*p));
+    hurt(d2); gain(24); heart(-7);
+    note('<p>你被' + name + '按在骨堆上。它没有嘴，却发出很响的咀嚼声。你靠一枚爆开的灵石才翻出去。</p>' +
+         '<p>伤势 +' + d2 + '，道心 -7，修为 +24，寿元 -5。</p>', 'bad');
+  }
+  check();
+}
+
+/* ---------------- 与人交手：默认可罢手、可和解，非必死 ---------------- */
+function npcSpar(n, bonus, kind){
+  if(!n || !n.alive) return;
+  var ep = eggFoeMul(foeMul(npcPw(n)));
+  var p = clamp(odds(ep) + (bonus||0), 0.05, 0.95);
+  var ta = (n.gender === '男' ? '他' : '她');
+  S.fights++; n.duels++; n.events++; doomArm(); years(3);
+  if(roll(p)){
+    S.wins++;
+    var g = Math.round(70 + 40*p);
+    gain(g); stone(3); heart(4);
+    bondAdd(n, 6); guardAdd(n, 8);
+    doomSiphon(Math.round(ep * doomMul()));
+    note('<p>你胜了' + n.name + '半招。' + ta + '退开三步，抹掉嘴角的血，没恼，反而笑了：「记住了。」</p>' +
+         '<p>修为 +' + g + '，灵石 +3，好感 ' + n.bond + '，戒备 ' + n.guard + '。</p>', 'good');
+  }else{
+    var d = mit(Math.round(26 + 8*(1-p)));
+    hurt(d); heart(-6); bondAdd(n, 4); guardAdd(n, 6);
+    note('<p>你被' + n.name + '按住，剑锋停在喉咙前一寸。' + ta + '收了手：「别把别人的忍让当成你赢过。」</p>' +
+         '<p>伤势 +' + d + '，好感 ' + n.bond + '，戒备 ' + n.guard + '。</p>', 'bad');
+  }
+  if(!check()) npcGrow(n);
+}
+/* 决战：可下杀手，也可点到为止 */
+function npcDuel(n, lethal){
+  if(!n || !n.alive) return;
+  var ep = eggFoeMul(foeMul(npcPw(n)));
+  var p = clamp(odds(ep) + (lethal ? -0.04 : 0.06), 0.05, 0.95);
+  var ta = (n.gender === '男' ? '他' : '她');
+  S.fights++; n.duels++; n.events++; doomArm(); years(4);
+  if(roll(p)){
+    S.wins++;
+    doomSiphon(Math.round(ep * doomMul()));
+    if(lethal){
+      var g2 = 170;
+      gain(g2); stone(14); heart(-12);
+      n.alive = 0; n.mate = 0; n.bond = -100; n.guard = 100;
+      S.f.npcKilled = n.id; S.f[n.id + 'Killed'] = 1;
+      note('<p>' + n.name + '倒下去时还睁着眼，像是没想明白。你把' + ta + '的储物袋拿走了，里面有一件你见过的旧物。</p>' +
+           '<p>修为 +' + g2 + '，灵石 +14，道心 -12。' + sectName(n.sect) + '会记住这笔账。</p>', 'bad');
+    }else{
+      gain(90); heart(8); bondAdd(n, 12); guardAdd(n, 10);
+      note('<p>你收了最后一剑。' + n.name + '喘着气看你，忽然把剑插回鞘里：「这次算你赢。」</p>' +
+           '<p>修为 +90，道心 +8，好感 ' + n.bond + '。</p>', 'good');
+    }
+  }else{
+    var d = mit(Math.round((lethal ? 46 : 30) + 8*p));
+    hurt(d); heart(lethal ? -14 : -6);
+    guardAdd(n, lethal ? 20 : 8);
+    if(lethal){
+      note('<p>' + ta + '的手比你快。最后一击落在你丹田上，你听见那种很轻的碎裂声。</p><p>伤势 +' + d + '。</p>', 'bad');
+    }else{
+      note('<p>你败了。' + n.name + '把剑架在你颈边停了三息，然后收剑走了。</p><p>伤势 +' + d + '，戒备 ' + n.guard + '。</p>', 'bad');
+    }
+  }
+  if(!check()) npcGrow(n);
+}
+function npcOmen(){
+  var n = coreNpc();
+  if(!n || !n.alive) return '';
+  var ta = (n.gender === '男' ? '他' : '她');
+  if(n.mate) return '<p>百里之外，' + n.name + '没有走。' + ta + '说：「你渡你的劫，后面我看着。」</p>';
+  if(n.bond >= 60) return '<p>百里之外，' + n.name + '替你挡住了其它围观的修士。' + ta + '始终没往这边看一眼。</p>';
+  if(n.guard >= 75) return '<p>百里之外，' + n.name + '也没有走。' + ta + '在等一个结果——你死，或者你活着下来之后由' + ta + '动手。</p>';
+  return '';
+}
+function npcEnd(){
+  if(!S.cast) return '';
+  var s = '', i;
+  for(i=0;i<S.cast.length;i++){
+    var n = S.cast[i];
+    if(!n.met && !n.events) continue;
+    if(!n.alive){
+      s += '<p>' + n.name + '的坟在北坡，是你亲手挖的。' + sectName(n.sect) + '至今还在找一个不知名的散修。</p>';
+      continue;
+    }
+    if(n.mate){
+      if(S.ended === 'ASCEND') s += '<p>' + n.name + '与你是道侣。飞升那日，替你在劫云下护法的是' + (n.gender==='男'?'他':'她') + '——' +
+        sectName(n.sect) + '那边闹了很久，最后也没能把人叫回去。</p>';
+      else if(S.ended === 'RETIRE') s += '<p>' + n.name + '随你一起散了功。你们在南边的镇上开了一间小药铺，' +
+        (n.gender==='男'?'他':'她') + '管账，你抓药，再没提过山上的事。</p>';
+      else s += '<p>' + n.name + '与你是道侣。' + sectName(n.sect) + '那边闹了很久，最后也没能把' + (n.gender==='男'?'他':'她') + '叫回去。</p>';
+    }
+    else if(n.bond >= 75) s += '<p>' + n.name + '最后没有回' + sectName(n.sect) + '。' + (n.gender==='男'?'他':'她') + '说你欠着一句话没讲完。</p>';
+    else if(n.bond >= 40) s += '<p>' + n.name + '成了这世上少数几个还肯与你说话的人。</p>';
+    else if(n.guard >= 75) s += '<p>' + n.name + '还在找你。你们之间的账，一世也算不清了。</p>';
+    else if(n.guard >= 50) s += '<p>' + n.name + '与你始终隔着一层。' + sectName(n.sect) + '的门规，比人心硬。</p>';
+    else s += '<p>' + n.name + '的消息偶尔还会传到你耳中：还在' + SECTS[n.sect].path + '上熬着，和你一样不肯回头。</p>';
+  }
+  return s;
+}
+
+/* ---------------- 开局加点 ---------------- */
+function pickGender(g){ AL.gender = g; render(); }
+function adjAttr(k, d){
+  if(d > 0){
+    if(alLeft() <= 0 || AL.a[k] >= 10) return;
+    AL.a[k]++;
+  }else{
+    if(AL.a[k] <= 1) return;
+    AL.a[k]--;
+  }
+  render();
+}
+function resetAttr(){ AL.a = { str:1, agi:1, con:1, wit:1, luk:1, wil:1 }; render(); }
+function confirmAttr(){
+  if(!AL.gender || alLeft() !== 0) return;
+  S.gender = AL.gender;
+  S.attr = { str:AL.a.str, agi:AL.a.agi, con:AL.a.con, wit:AL.a.wit, luk:AL.a.luk, wil:AL.a.wil };
+  S.life = 80 + S.attr.con * 2;
+  S.cast = genCast();
+  S.npcIdx = 0; S.npcCd = 2 + Math.floor(rnd()*2);
+  heart(0);
+  S.scene = 'TALENT';
+  CUR = [];
+  save(); render();
+}
+function renderCreate(){
+  var o = '<div class="cr-sec">一 · 择身</div><div class="cr-row">' +
+    '<button class="' + (AL.gender==='男'?'on':'') + '" onclick="pickGender(\'男\')">男</button>' +
+    '<button class="' + (AL.gender==='女'?'on':'') + '" onclick="pickGender(\'女\')">女</button></div>' +
+    '<div class="cr-sec">二 · 分二十点（余 ' + alLeft() + '）</div>';
+  for(var i=0;i<ATTR.length;i++){
+    var a = ATTR[i], v = AL.a[a.k];
+    o += '<div class="cr-attr"><div class="cr-n"><b>' + a.n + '</b><em>' + a.d + '</em></div>' +
+         '<div class="cr-c">' +
+         '<button class="sq" onclick="adjAttr(\'' + a.k + '\',-1)" ' + (v<=1?'disabled':'') + '>−</button>' +
+         '<span class="cr-v">' + v + '</span>' +
+         '<button class="sq" onclick="adjAttr(\'' + a.k + '\',1)" ' + ((v>=10||alLeft()<=0)?'disabled':'') + '>+</button>' +
+         '</div></div>';
+  }
+  document.getElementById('opts').innerHTML = o;
+  var ok = (AL.gender && alLeft() === 0);
+  var egg = allOnes();                                  /* 六项皆一：不报错，直接给一条别的路 */
+  var hot = egg ? '<button class="hot egg" onclick="eggAsk()">' +
+        (AL.gender ? '就这样入道？' : '请先择身') + '</button>'
+    : '<button class="hot" onclick="confirmAttr()">' +
+        (ok ? '以此身入道' : (AL.gender ? '尚余 ' + alLeft() + ' 点' : '请先择身')) + '</button>';
+  if(egg && !AL.gender) hot = '<button class="hot" onclick="confirmAttr()">请先择身</button>';
+  document.getElementById('acts').innerHTML = '<div class="acts-in">' +
+    '<button onclick="resetAttr()">重置</button>' + hot +
+    '</div><div id="tip">臂力主战斗，敏捷主先手与闪避，根骨主气血与防御，悟性主修炼，运气主机缘与随机，毅力主心魔与破关。每项 1-10，共 20 点。</div>';
+}
+
+/* ---------------- 人物事件 ---------------- */
+function rp(){ return S.pending || 's3'; }
+function npcEv(){ return NPC_EVENTS[S.npcKey] || NPC_EVENTS.encounter; }
+function talOpt(k){
+  var t = TALENTS[k];
+  return { t:t.n, h:t.tag + '　' + t.d, do:function(){ pickTalent(k); }, go:'MEET' };
+}
+function npcEvOk(k, n){
+  if(n.f['e_' + k]) return false;
+  if(k === 'aid')      return n.bond >= 10 || n.guard < 60;
+  if(k === 'banquet')  return n.bond >= 40;
+  if(k === 'standoff') return npcCamp(n) !== '正';
+  if(k === 'gift')     return n.bond >= 15;
+  return true;
+}
+function pickNpcKey(n){
+  if(!n.met) return 'meet';
+  if(n.guard >= 75 && !n.f.bad) return 'bad';
+  if(n.bond >= 100 && !n.mate && !n.f.wed) return 'wed';
+  if(n.bond >= 80 && !n.f.c80) return 'c80';
+  if(n.bond >= 50 && !n.f.c50) return 'c50';
+  if(n.bond >= 20 && !n.f.c20) return 'c20';
+  var pool = ['encounter','task','gift','misunderstand','aid','banquet','standoff','spar','encounter','aid'];
+  for(var i=0;i<pool.length;i++) if(npcEvOk(pool[i], n)) return pool[i];
+  return 'spar';
+}
+function nextNpcIdx(){
+  var i, unmet = -1, core = S.cast[0];
+  for(i=1;i<S.cast.length;i++) if(!S.cast[i].met){ unmet = i; break; }
+  /* 核心角色已起势（好感过三十）时，事件优先留给他，让这条线走完 */
+  var pCore = core.met ? (core.bond >= 30 ? 0.92 : 0.72) : 1;
+  if(rnd() < pCore) return 0;
+  if(unmet >= 0) return unmet;
+  var best = 1;
+  for(i=1;i<S.cast.length;i++) if((S.cast[i].events||0) < (S.cast[best].events||0)) best = i;
+  return best;
+}
+function npcTrigger(nx){
+  var i = nextNpcIdx();
+  S.npcIdx = i;
+  var n = S.cast[i];
+  npcGrow(n);
+  S.npcKey = pickNpcKey(n);
+  S.pending = nx;
+  S.npcCd = 2 + Math.floor(rnd()*2);
+  return 'NPC';
+}
+/* 打开名册：记下来路；已在名册里则不重复覆盖来路（否则合上会回到名册自身） */
+function castOpen(){
+  if(S.ended || S.scene === 'CAST') return;
+  var b = S.scene;
+  if(b === 'CREATE' || b === 'TALENT' || b === 'EGG_CONFIRM') b = 's1';
+  S.back = b; CUR = []; S.scene = 'CAST'; save(); render();
+}
+/* 合上名册：统一出口，过滤掉不可返回的场景 */
+function castBack(){
+  var t = S.back;
+  if(!t || !SCENES[t]) t = S.pending || 's1';
+  if(t === 'CAST' || t === 'CREATE' || t === 'TALENT' || t === 'EGG_CONFIRM') t = S.pending || 's1';
+  return t;
+}
+/* 事件收尾：统一推进阶段、记录已用、返回主线 */
+function npcDone(n, key){
+  n.events++;
+  if(key){ n.f['e_' + key] = 1; n.f[key] = 1; }
+  if(key === 'meet') n.met = 1;
+  if(n.mate) n.f.wed = 1;
+  if(n.stage < 5) n.stage++;
+}
+
+var NPC_EVENTS = {
+
+meet:{
+  t:'初遇 · 路上',
+  x:function(){
+    var n = npcByScene();
+    return '<p>你在路上撞见' + n.name + '。' + sectTag(n.sect) + '，' + n.origin + '。</p>' +
+           npcLine(n) + npcCard(n);
+  },
+  c:function(){
+    var n = npcByScene();
+    return [
+      { t:'报上名字，攀谈两句', h:'好感 +20，道心 +2',
+        do:function(){ npcDone(n, 'meet'); bondAdd(n, 20); heart(2);
+          note('<p>你们在路边说了小半个时辰的话。' + n.name + '记性很好，把你说的每一句都记住了。</p><p>好感 ' + n.bond + '。</p>', 'good'); }, go:rp },
+      { t:'只点头，各走各路', h:'戒备 +8',
+        do:function(){ npcDone(n, 'meet'); guardAdd(n, 8);
+          note('<p>你错身过去了。走远之后才发觉，' + n.name + '在原地站了一会儿。</p>', 'warn'); }, go:rp },
+      { t:'把最后半块干粮分给他', h:'好感 +24，寿元 -2',
+        do:function(){ npcDone(n, 'meet'); bondAdd(n, 24); years(2);
+          note('<p>' + n.name + '接了干粮，看了你很久：「' + n.origin + '的人，不该这么心软。」' + (n.gender==='男'?'他':'她') + '还是把它吃完了。</p><p>好感 ' + n.bond + '。</p>', 'good'); }, go:rp }
+    ];
+  }
+},
+
+encounter:{
+  t:'争 · 同一件东西',
+  x:function(){
+    var n = npcByScene();
+    return '<p>一株药，一枚兽丹，或者一眼灵泉——总之只有一份，你和' + n.name + '几乎同时按住了它。</p>' +
+           '<p>' + sectTag(n.sect) + '的规矩是：先到者得。可这世上从来没有谁先到。</p>' + npcCard(n);
+  },
+  c:function(){
+    var n = npcByScene();
+    return [
+      { t:'先出手，抢在他前面', h:'手底下见真章',
+        do:function(){ npcDone(n, 'encounter'); npcSpar(n, 0.10); }, go:rp },
+      { t:'一人一半，当场分了', h:'好感 +20，修为 +35，寿元 -3',
+        do:function(){ npcDone(n, 'encounter'); bondAdd(n, 20); years(3); gain(35);
+          note('<p>你把东西掰成两半，递过去一半。' + n.name + '愣了一下才接：「你倒是大方。」</p><p>好感 ' + n.bond + '，修为 +35。</p>', 'good'); }, go:rp },
+      { t:'让给他，转身就走', h:'好感 +12，道心 +4',
+        do:function(){ npcDone(n, 'encounter'); bondAdd(n, 12); heart(4);
+          note('<p>你把手收回来，走了。身后传来一句：「你记着，我欠你一次。」</p><p>好感 ' + n.bond + '，道心 +4。</p>', 'good'); }, go:rp }
+    ];
+  }
+},
+
+task:{
+  t:'差事 · 只有一个人能交差',
+  x:function(){
+    var n = npcByScene();
+    return '<p>两家的师门都要这份东西：' + sectTag(n.sect) + '要它复命，落霞山门要它交差。' +
+           '先交的人受赏，后交的人受罚——罚的是你，或者他。</p>' + npcCard(n);
+  },
+  c:function(){
+    var n = npcByScene();
+    return [
+      { t:'抢功，先一步交差', h:'灵石 +10，修为 +40，戒备 +14',
+        do:function(){ npcDone(n, 'task'); stone(10); gain(40); guardAdd(n, 14);
+          note('<p>你连夜赶回山门，把东西交了。执事赏了灵石，还夸了一句「有出息」。</p><p>' + n.name + '那天被罚跪了一夜。</p>', 'warn'); }, go:rp },
+      { t:'各退一步，两家都不交', h:'好感 +22，道心 +6，寿元 -4',
+        do:function(){ npcDone(n, 'task'); bondAdd(n, 22); heart(6); years(4);
+          note('<p>你们把它埋回原处，各自回去领了罚。挨罚时你想，这买卖不算亏。</p><p>好感 ' + n.bond + '，道心 +6。</p>', 'good'); }, go:rp },
+      { t:'做两份假的，面子上都过得去', h:'悟性判定：成败各半',
+        do:function(){ npcDone(n, 'task'); years(3);
+          if(roll(0.40 + avD('wit')*0.06)){
+            bondAdd(n, 28); stone(8); gain(50);
+            note('<p>你仿的凭证连师门的老执事都没看出来。' + n.name + '看着你，眼神变了。</p><p>好感 ' + n.bond + '，灵石 +8，修为 +50。</p>', 'good');
+          }else{
+            guardAdd(n, 18); heart(-8);
+            note('<p>假凭证第三天就被人认出来了。' + n.name + '替你担了一半，脸色很难看。</p><p>戒备 ' + n.guard + '，道心 -8。</p>', 'bad');
+          }
+          if(!check()) npcGrow(n); }, go:rp }
+    ];
+  }
+},
+
+gift:{
+  t:'礼 · 该送对的东西',
+  x:function(){
+    var n = npcByScene();
+    return '<p>' + n.name + '要去赴一场师门大比，路过你这里。你们在渡口等船，江风很大。</p>' +
+           '<p>你手里有点东西。人人都知道' + (n.gender==='男'?'他':'她') + '喜欢' + n.likes + '，忌讳' + n.taboo + '。</p>' + npcCard(n);
+  },
+  c:function(){
+    var n = npcByScene(), o = [];
+    o.push({ t:'花灵石买一件合他喜好的东西', h:'灵石 -3，好感 +40',
+      need:function(){ return S.stone >= 3; }, why:'灵石不足三块',
+      do:function(){ npcDone(n, 'gift'); stone(-3); bondAdd(n, 40);
+        note('<p>你把包好的东西递过去。' + n.name + '拆开看了一眼，又抬头看你，半天没说话。</p><p>好感 ' + n.bond + '。</p>', 'good'); }, go:rp });
+    o.push({ t:'把身上最贵的那件给他', h:'灵石 -6，好感 +8',
+      need:function(){ return S.stone >= 6; }, why:'灵石不足六块',
+      do:function(){ npcDone(n, 'gift'); stone(-6); bondAdd(n, 10);
+        note('<p>你递过去。' + n.name + '接了，却笑得有点淡：「你连我忌讳什么都不知道。」</p><p>好感 ' + n.bond + '。贵的不一定是对的。</p>', 'warn'); }, go:rp });
+    o.push({ t:'什么也不送，陪他坐到船来', h:'好感 +14，道心 +5，寿元 -2',
+      do:function(){ npcDone(n, 'gift'); bondAdd(n, 14); heart(5); years(2);
+        note('<p>你们在江边坐了一夜，谁也没说话。天亮时船来了，' + n.name + '上船前回头看了你一眼。</p><p>好感 ' + n.bond + '。</p>', 'good'); }, go:rp });
+    return o;
+  }
+},
+
+misunderstand:{
+  t:'疑 · 有人在中间传了话',
+  x:function(){
+    var n = npcByScene();
+    return '<p>有人告诉' + n.name + '：你在背后说过' + (n.gender==='男'?'他':'她') + '的出身，笑过' + (n.gender==='男'?'他':'她') + '的师门。</p>' +
+           '<p>这话不是你说的。但传话的人，是你师门里另一个派系的。</p>' + npcCard(n);
+  },
+  c:function(){
+    var n = npcByScene();
+    return [
+      { t:'当面对质，把话说清', h:'悟性判定，成则戒备大减',
+        do:function(){ npcDone(n, 'misunderstand'); years(2);
+          if(roll(0.44 + avD('wit')*0.06 + (hasTal('lie') ? 0.15 : 0))){
+            bondAdd(n, 18); guardAdd(n, -12); heart(4);
+            note('<p>你把每一句话的来路都摆出来。' + n.name + '听完，把剑从桌上拿开了：「知道了。」</p><p>好感 ' + n.bond + '，戒备 ' + n.guard + '。</p>', 'good');
+          }else{
+            guardAdd(n, 12); heart(-6);
+            note('<p>你越说越乱。' + n.name + '最后只说了一句：「不必解释了。」</p><p>戒备 ' + n.guard + '，道心 -6。</p>', 'bad');
+          }
+          if(!check()) npcGrow(n); }, go:rp },
+      { t:'不解释，让他自己去查', h:'戒备 +6，道心 +5',
+        do:function(){ npcDone(n, 'misunderstand'); guardAdd(n, 6); heart(5);
+          note('<p>你什么也没说就走了。三个月后你听说，' + n.name + '把那个传话的人查了个底朝天。</p><p>戒备 ' + n.guard + '，道心 +5。</p>', 'warn'); }, go:rp },
+      { t:'以牙还牙，也去传他的事', h:'戒备 +22，修为 +20，道心 -8',
+        do:function(){ npcDone(n, 'misunderstand'); guardAdd(n, 22); gain(20); heart(-8);
+          note('<p>话传得很快，快到你自己都收不住。' + n.name + '在师门里被停了三个月差事。</p><p>戒备 ' + n.guard + '。你赢了一次，可你并不痛快。</p>', 'bad'); }, go:rp }
+    ];
+  }
+},
+
+aid:{
+  t:'援 · 他撑不住了',
+  x:function(){
+    var n = npcByScene();
+    return '<p>你在一处断墙后面找到' + n.name + '。经脉断了半条，血把雪浸成了一片黑。</p>' +
+           '<p>' + (n.gender==='男'?'他':'她') + '看见你，手先摸上剑柄，又慢慢松开：「……你来得真巧。」</p>' + npcCard(n);
+  },
+  c:function(){
+    var n = npcByScene(), o = [];
+    o.push({ t:'耗灵石为他续命', h:'灵石 -5，好感 +48，道心 +8',
+      need:function(){ return S.stone >= 5; }, why:'灵石不足五块',
+      do:function(){ npcDone(n, 'aid'); stone(-5); bondAdd(n, 48); guardAdd(n, -15); heart(8); S.it.heal++;
+        note('<p>你把五块灵石碾碎，一道道灌进' + (n.gender==='男'?'他':'她') + '的经脉。' + n.name + '盯着你看了很久，问：「为什么？」你没答。</p><p>好感 ' + n.bond + '，疗伤丹 +1。</p>', 'good'); }, go:rp });
+    o.push({ t:'替他挡一剑，背他走', h:'伤势 +20，好感 +32，道心 +6',
+      do:function(){ npcDone(n, 'aid'); var d = mit(20); hurt(d); bondAdd(n, 32); heart(6);
+        note('<p>追兵的那一剑落在你肩上。你把' + n.name + '背出三里地，血洒了一路。</p><p>伤势 +' + d + '，好感 ' + n.bond + '。</p>', 'good');
+        if(check()) return; }, go:rp });
+    o.push({ t:'袖手旁观，转身离开', h:'戒备 +18，道心 -8',
+      do:function(){ npcDone(n, 'aid'); guardAdd(n, 18); heart(-8);
+        note('<p>你从他身边走过去，脚步没停。身后没有喊声，只有风。</p><p>戒备 ' + n.guard + '。</p>', 'bad'); }, go:rp });
+    return o;
+  }
+},
+
+banquet:{
+  t:'约 · 山下的酒',
+  x:function(){
+    var n = npcByScene();
+    return '<p>' + n.name + '递来一张帖子，或者干脆就是一壶酒：「山下的镇子新开了一家酒肆。去不去？」</p>' + npcCard(n);
+  },
+  c:function(){
+    var n = npcByScene(), o = [];
+    o.push({ t:'赴约，什么也不带', h:'好感 +24，道心 +8，寿元 -2',
+      do:function(){ npcDone(n, 'banquet'); bondAdd(n, 24); heart(8); years(2);
+        note('<p>你们喝到天亮。' + n.name + '说了很多师门的事，也说了一句「这些年，只有跟你喝酒最省心」。</p><p>好感 ' + n.bond + '，道心 +8。</p>', 'good'); }, go:rp });
+    o.push({ t:'赴约，带上他喜欢的东西', h:'灵石 -4，好感 +48',
+      need:function(){ return S.stone >= 4; }, why:'灵石不足四块',
+      do:function(){ npcDone(n, 'banquet'); stone(-4); bondAdd(n, 48); heart(6);
+        note('<p>你把东西放在桌上。' + n.name + '看了很久，忽然说：「你这些心思，用在我身上可惜了。」' +
+             '话是这么说，' + (n.gender==='男'?'他':'她') + '把东西收得很仔细。</p><p>好感 ' + n.bond + '。</p>', 'good'); }, go:rp });
+    o.push({ t:'回绝，说修行要紧', h:'戒备 +10，修为 +25',
+      do:function(){ npcDone(n, 'banquet'); guardAdd(n, 10); gain(25);
+        note('<p>你说不去了。' + n.name + '把酒收了，笑得跟平时一样：「也是。修行要紧。」</p><p>戒备 ' + n.guard + '，修为 +25。</p>', 'warn'); }, go:rp });
+    return o;
+  }
+},
+
+standoff:{
+  t:'道 · 立场上的分歧',
+  x:function(){
+    var n = npcByScene();
+    return '<p>你撞见' + n.name + '奉命办事——按' + sectName(n.sect) + '的规矩，这事该办。</p>' +
+           '<p>可按你的规矩，不该。' + npcCard(n);
+  },
+  c:function(){
+    var n = npcByScene();
+    return [
+      { t:'各执一词，论个明白', h:'判定：成则两不伤，败则结怨',
+        do:function(){ npcDone(n, 'standoff'); years(2);
+          if(roll(0.42 + avD('wit')*0.05 + avD('wil')*0.03)){
+            bondAdd(n, 18); heart(6); guardAdd(n, -8);
+            note('<p>你们从夜里辩到天亮。' + n.name + '最后把手按在文书上：「这次我认你的理。」</p><p>好感 ' + n.bond + '，道心 +6。</p>', 'good');
+          }else{
+            guardAdd(n, 10); heart(-4);
+            note('<p>你没能说服' + (n.gender==='男'?'他':'她') + '。' + n.name + '办完了事，走的时候没看你。</p><p>戒备 ' + n.guard + '。</p>', 'bad');
+          }
+          if(!check()) npcGrow(n); }, go:rp },
+      { t:'各走各路，互不相干', h:'戒备 +6，道心 +5',
+        do:function(){ npcDone(n, 'standoff'); guardAdd(n, 6); heart(5);
+          note('<p>你侧身让开。立场这东西，本来就不是几句话能挪动的。</p><p>道心 +5。</p>', 'warn'); }, go:rp },
+      { t:'拔剑，先分高下再讲道理', h:'与他一战',
+        do:function(){ npcDone(n, 'standoff'); npcSpar(n, 0.06); }, go:rp }
+    ];
+  }
+},
+
+spar:{
+  t:'试 · 手底下见真章',
+  x:function(){
+    var n = npcByScene();
+    return '<p>' + n.name + '把剑（或刀、或一捧毒砂）横在身前：「试试？」</p>' +
+           '<p>切磋不是生死。修士之间，很多话是打完了才好说的。</p>' + npcCard(n);
+  },
+  c:function(){
+    var n = npcByScene(), o = [];
+    o.push({ t:'全力以赴', h:'胜负各凭本事',
+      do:function(){ npcDone(n, 'spar'); npcSpar(n, 0.08); }, go:rp });
+    o.push({ t:'留三分力，给他台阶', h:'好感 +14，戒备 +4',
+      do:function(){ npcDone(n, 'spar'); bondAdd(n, 14); guardAdd(n, 4); gain(30);
+        note('<p>你收了力。' + n.name + '不是傻子，收了手：「你让我的。」</p><p>好感 ' + n.bond + '，修为 +30。</p>', 'good'); }, go:rp });
+    o.push({ t:'不比了，请他喝酒', h:'灵石 -2，好感 +14',
+      need:function(){ return S.stone >= 2; }, why:'灵石不足两块',
+      do:function(){ npcDone(n, 'spar'); stone(-2); bondAdd(n, 18); heart(4);
+        note('<p>你把兵器按下去：「打什么打，喝酒。」' + n.name + '看了你一会儿，笑了。</p><p>好感 ' + n.bond + '。</p>', 'good'); }, go:rp });
+    return o;
+  }
+},
+
+bad:{
+  t:'反目 · 话已经说不下去',
+  x:function(){
+    var n = npcByScene();
+    return '<p>' + n.name + '挡在你前面。这一回不是切磋，也没有旁人在场。</p>' +
+           '<p>' + (n.gender==='男'?'他':'她') + '说：「到这一步，总得有个了结。」</p>' +
+           '<p>' + sectTag(n.sect) + '　关系 ' + relLabel(n) + '　戒备 ' + n.guard + '</p>' + npcCard(n);
+  },
+  c:function(){
+    var n = npcByScene(), o = [];
+    o.push({ t:'打一场，点到为止', h:'可胜可负，不留人命',
+      do:function(){ npcDone(n, 'bad'); npcDuel(n, false); }, go:rp });
+    o.push({ t:'先把话说开，最后试一次', h:'毅力判定：成则化解',
+      do:function(){ npcDone(n, 'bad'); years(3);
+        if(roll(0.36 + avD('wil')*0.05 + S.heart/300 + (n.bond > 0 ? 0.08 : 0))){
+          guardAdd(n, -30); bondAdd(n, 18); heart(10);
+          note('<p>你说完最后一句，' + n.name + '的剑尖垂下去了。「……这句话你早该说。」</p><p>戒备 ' + n.guard + '，好感 ' + n.bond + '。</p>', 'good');
+        }else{
+          guardAdd(n, 12); heart(-8); npcSpar(n, 0.05);
+          note('<p>你的话没说完，' + n.name + '已经动了手。</p>', 'bad');
+        }
+        if(!check()) npcGrow(n); }, go:rp });
+    if(n.guard >= 85) o.push({ t:'决死一战，只有一个人能下山', h:'你死，或者他死',
+      do:function(){ npcDone(n, 'bad'); npcDuel(n, true); }, go:rp });
+    o.push({ t:'退走，这笔账记下', h:'修为 +25，戒备 +8',
+      do:function(){ npcDone(n, 'bad'); gain(25); guardAdd(n, 8);
+        note('<p>你退了三步，转身走了。' + n.name + '没有追。</p><p>修为 +25，戒备 ' + n.guard + '。</p>', 'warn'); }, go:rp });
+    return o;
+  }
+},
+
+c20:{
+  t:'识 · 一件旧事',
+  x:function(){
+    var n = npcByScene();
+    return '<p>夜里守着一堆火，' + n.name + '忽然开口，讲了自己是怎么进' + sectName(n.sect) + '的。</p>' +
+           '<p>' + n.origin + '——这句话' + (n.gender==='男'?'他':'她') + '说得很快，像是怕被人听清。</p>' + npcCard(n);
+  },
+  c:function(){
+    var n = npcByScene();
+    return [
+      { t:'认真听完，也讲自己的', h:'好感 +40，道心 +6',
+        do:function(){ npcDone(n, 'c20'); bondAdd(n, 40); heart(6);
+          note('<p>你把青石村的事也讲了。' + n.name + '听完点点头：「所以我们是一路人。」</p><p>好感 ' + n.bond + '。</p>', 'good'); }, go:rp },
+      { t:'敷衍两句，把火拨旺', h:'戒备 +10，修为 +20',
+        do:function(){ npcDone(n, 'c20'); guardAdd(n, 10); gain(20);
+          note('<p>你只应了一声。' + n.name + '就再没说话，坐到天亮。</p><p>戒备 ' + n.guard + '。</p>', 'warn'); }, go:rp },
+      { t:'不动声色，把这些记下来', h:'修为 +40，好感 -10，道心 -6',
+        do:function(){ npcDone(n, 'c20'); gain(40); bondAdd(n, -10); heart(-6); guardAdd(n, 8);
+          note('<p>对方师门的底细，早晚有用。你这样想着，把每一个字都记住了。</p><p>修为 +40，好感 ' + n.bond + '。</p>', 'bad'); }, go:rp }
+    ];
+  }
+},
+
+c50:{
+  t:'并肩 · 一起出手',
+  x:function(){
+    var n = npcByScene();
+    return '<p>' + n.name + '找上门来：「有件事我一个人办不成。」</p>' +
+           '<p>' + (n.gender==='男'?'他':'她') + '身后跟着的麻烦不小。愿意搭手的，通常是信得过的人。</p>' + npcCard(n);
+  },
+  c:function(){
+    var n = npcByScene(), o = [];
+    o.push({ t:'跟他一起动手', h:'联手一战，战利平分',
+      do:function(){ npcDone(n, 'c50');
+        var p = clamp(odds(foeMul(npcPw(n))*1.9) + 0.10, 0.06, 0.94);
+        S.fights++; years(4);
+        if(roll(p)){
+          S.wins++; gain(130); stone(9); heart(8); bondAdd(n, 40);
+          note('<p>两个人背靠背打完这一场。收剑的时候' + n.name + '把手搭在你肩上，喘着气笑：「还行。」</p><p>修为 +130，灵石 +9，好感 ' + n.bond + '。</p>', 'good');
+        }else{
+          var d = mit(40); hurt(d); heart(-6); bondAdd(n, 12);
+          note('<p>你们输了，但都活着退出来了。' + n.name + '替你按住伤口：「这笔不算完。」</p><p>伤势 +' + d + '，好感 ' + n.bond + '。</p>', 'bad');
+        }
+        if(!check()) npcGrow(n); }, go:rp });
+    o.push({ t:'劝他别去', h:'好感 +8，道心 +6',
+      do:function(){ npcDone(n, 'c50'); bondAdd(n, 12); heart(6);
+        note('<p>你说太险了。' + n.name + '沉默很久，最后把帖子收了：「听你的。」</p><p>好感 ' + n.bond + '。</p>', 'good'); }, go:rp });
+    o.push({ t:'借他的手，办自己的事', h:'修为 +80，好感 -14，道心 -10',
+      do:function(){ npcDone(n, 'c50'); gain(80); bondAdd(n, -14); guardAdd(n, 15); heart(-10);
+        note('<p>你指了个方向，让他先去。等你到时，事情已经办完了，' + n.name + '身上多了两道不该有的伤。</p><p>修为 +80，好感 ' + n.bond + '。</p>', 'bad'); }, go:rp });
+    return o;
+  }
+},
+
+c80:{
+  t:'近 · 说不清的那一步',
+  x:function(){
+    var n = npcByScene();
+    return '<p>你们之间隔着的那层东西，薄得能在风里看见。</p>' +
+           '<p>' + n.name + '问你：「你我这样，算什么？」</p>' + npcCard(n);
+  },
+  c:function(){
+    var n = npcByScene();
+    return [
+      { t:'直说，不绕圈子', h:'好感 +45，好感足够高则就此结契',
+        do:function(){ npcDone(n, 'c80'); bondAdd(n, 45); heart(8);
+          if(n.bond >= 82 && !n.mate){
+            n.mate = 1; n.f.wed = 1; heart(12); gain(120);
+            note('<p>你说了。' + n.name + '听完，很轻地应了一声：「知道了。」然后把手伸过来，没再收回去。</p>' +
+                 '<p>没有宾客，没有喜帖，只有两句誓。此后天劫、飞升、归隐，结局皆与他人不同。</p>' +
+                 '<p>修为 +120，道心 +12。</p>', 'good');
+          }else{
+            note('<p>你说了。' + n.name + '听完，很轻地应了一声：「知道了。」然后把手伸过来了。</p><p>好感 ' + n.bond + '。</p>', 'good');
+          } }, go:rp },
+      { t:'什么也不说，陪他走完这段路', h:'好感 +10，道心 +10',
+        do:function(){ npcDone(n, 'c80'); bondAdd(n, 16); heart(10);
+          note('<p>你把话咽回去了。路走完的时候，' + n.name + '说：「不说也没关系。我记性好。」</p><p>好感 ' + n.bond + '，道心 +10。</p>', 'good'); }, go:rp },
+      { t:'退开半步，说自己只有一条道要走', h:'戒备 +14，修为 +60',
+        do:function(){ npcDone(n, 'c80'); guardAdd(n, 14); gain(60); heart(-6);
+          note('<p>你退了半步。' + n.name + '看着你，把那点没说完的东西收了回去：「行。那就都别回头。」</p><p>修为 +60，戒备 ' + n.guard + '。</p>', 'warn'); }, go:rp }
+    ];
+  }
+},
+
+wed:{
+  t:'道侣 · 两家的门规都拦不住',
+  x:function(){
+    var n = npcByScene();
+    return '<p>' + sectName(n.sect) + '的门规写得很清楚：真传弟子不得与外门散修结契。</p>' +
+           '<p>' + n.name + '把门规抄了一份，当着你的面烧了。</p>' + npcCard(n);
+  },
+  c:function(){
+    var n = npcByScene();
+    return [
+      { t:'就此结为道侣', h:'好感已满，此后同行',
+        do:function(){ npcDone(n, 'wed'); n.mate = 1; n.f.wed = 1; heart(20); gain(200); stone(10);
+          note('<p>没有宾客，没有喜帖，只有一处山洞和两句誓。' + n.name + '说：「往后你的劫，我分一半。」</p>' +
+               '<p>修为 +200，道心 +20。此后天劫、飞升、归隐，结局皆与他人不同。</p>', 'good'); }, go:rp },
+      { t:'不必名分，先活着再说', h:'好感 +16，道心 +6',
+        do:function(){ npcDone(n, 'wed'); bondAdd(n, 16); heart(6); n.f.wed = 1;
+          note('<p>你说：先把命保住。' + n.name + '把烧完的纸灰吹散：「也好。」</p><p>好感 ' + n.bond + '。</p>', 'good'); }, go:rp }
+    ];
+  }
+}
+
+};
+
+/* ---------------- 渲染 ---------------- */
+function bar(cls, lab, val, max, txt){
+  var w = clamp(max ? val/max*100 : 0, 0, 100);
+  return '<div class="bar"><div class="lab"><span>' + lab + '</span><i>' + txt + '</i></div>' +
+         '<div class="trk"><i class="' + cls + '" style="width:' + w + '%"></i></div></div>';
+}
+function attrRow(){
+  if(!S.attr) return '';
+  var h = '<div class="attrbar">';
+  for(var i=0;i<ATTR.length;i++) h += '<i>' + ATTR[i].n + ' <b>' + S.attr[ATTR[i].k] + '</b></i>';
+  return h + '</div>';
+}
+
+function render(){
+  if(!S) return;
+  var sc = SCENES[S.scene] || SCENES.s1;
+  var need = RM[S.realm].need;
+
+  /* 状态栏 */
+  var hud = '<div class="hudtop"><div class="realm">' + RM[S.realm].n +
+            '<small>境关 ' + Math.min(S.qi, need) + ' / ' + (need > 1e8 ? '—' : need) + '</small></div>' +
+            '<div class="pw">战力 <b>' + Math.round(myPw()) + '</b></div></div>' +
+            '<div class="bars">' +
+              bar('f-qi', '修为', S.qi, need, (need>1e8 ? '圆满' : Math.min(S.qi,need) + '') ) +
+              bar('f-heart', '道心', S.heart, 100, S.heart) +
+              bar('f-hurt', '伤势', S.hurt, 100, S.hurt) +
+            '</div>' +
+            '<div class="chips">' +
+              '<span class="chip">灵石 <b>' + S.stone + '</b></span>' +
+              '<span class="chip">寿元 <b>' + Math.max(0,S.life) + '</b> 载</span>' +
+              (S.it.heal ? '<span class="chip">疗伤丹 <b>' + S.it.heal + '</b></span>' : '') +
+              (S.it.calm ? '<span class="chip">静心丹 <b>' + S.it.calm + '</b></span>' : '') +
+              (S.it.pill ? '<span class="chip">破障丹 <b>' + S.it.pill + '</b></span>' : '') +
+              (S.f.魔功 ? '<span class="chip">魔功缠身</span>' : '') +
+              (S.f.灵根 ? '<span class="chip">二品灵根</span>' : '') +
+              (S.hurt >= 80 ? '<span class="chip warn">伤势垂危</span>' : '') +
+              (S.life <= 20 ? '<span class="chip warn">寿元将尽</span>' : '') +
+              (S.heart <= 20 ? '<span class="chip warn">道心将崩</span>' : '') +
+              (S.gender ? '<span class="chip">' + (S.gender==='男'?'男身':'女身') + '</span>' : '') +
+              (S.talent ? '<span class="chip' + (S.talent === 'doomed' ? ' doom' : '') + '"' +
+                  (S.talent === 'doomed' ? ' onclick="eggInfo()" title="' + TALENTS.doomed.d + '"' : '') +
+                  '>天赋 <b>' + talName() + '</b>' + (S.talent === 'doomed' ? ' ▸' : '') + '</span>' : '') +
+              (S.talent === 'doomed' ? '<span class="chip doom" onclick="eggInfo()" title="伤越重越强">余命 ' + Math.round(hpPct()*100) + '%　伤害 ×' + doomMul().toFixed(2) + '　减伤 ' + Math.round(doomDef()*100) + '%</span>' : '') +
+              (coreNpc() && coreNpc().met ? '<span class="chip">' + coreNpc().name + ' · ' + sectName(coreNpc().sect) + ' · ' + RM[clamp(coreNpc().realm,0,4)].n + ' · <b>' + relLabel(coreNpc()) + '</b></span>' : '') +
+              (S.tech ? '<span class="chip">' + techLabel() + '</span>' : '') +
+            '</div>' + attrRow();
+  document.getElementById('hud').innerHTML = hud;
+
+  /* 正文 */
+  var title = (typeof sc.t === 'function') ? sc.t() : sc.t;
+  var body  = (typeof sc.x === 'function') ? sc.x() : (sc.x || '');
+  var news  = S.news ? '<div class="news ' + (S.lastKind||'') + '">' + S.news + '</div>' : '';
+  S.news = '';
+  document.getElementById('stage').innerHTML = '<h2>' + title + '</h2>' + news + body;
+  document.getElementById('opts').innerHTML = '<div id="optsInner"></div>';
+
+  /* 选项：只写 data-i，点击由 #opts 上的事件委托统一处理（动态重渲染不会失效） */
+  CUR = (typeof sc.c === 'function') ? (sc.c() || []) : (sc.c || []);
+  var html = '';
+  for(var i=0;i<CUR.length;i++){
+    var c = CUR[i];
+    var ok = !c.need ? true : !!c.need();
+    html += '<button type="button" class="opt" data-i="' + i + '" ' + (ok ? '' : 'disabled aria-disabled="true" ') + '>' +
+            c.t + (c.h ? '<em>' + c.h + '</em>' : '') +
+            (!ok && c.why ? '<em class="no">' + c.why + '</em>' : '') + '</button>';
+  }
+  document.getElementById('opts').innerHTML = html;
+
+  /* 底部动作 */
+  var a = '';
+  var canBreak = canBreakBtn();
+  if(canBreak) a += '<button class="hot" onclick="goBreak()">闭关 · 冲击 ' + RM[S.realm+1].n + '</button>';
+  a += '<button onclick="cultivate()" ' + (S.ended?'disabled ':'') + '>闭关苦修<br>寿元-8 修为+' + qiByCult() + '</button>';
+  a += '<button onclick="absorb()" ' + ((S.ended||S.stone<1)?'disabled ':'') + '>纳灵石<br>灵石-1 修为+' + qiByStone() + '</button>';
+  a += '<button onclick="healSeclude()" ' + (S.ended?'disabled ':'') + '>闭关疗伤<br>寿元-4 伤势-22</button>';
+  if(S.it.heal) a += '<button onclick="eatHeal()" ' + (S.ended?'disabled ':'') + '>服疗伤丹<br>伤势-40</button>';
+  if(S.it.calm) a += '<button onclick="eatCalm()" ' + (S.ended?'disabled ':'') + '>服静心丹<br>道心+12</button>';
+  if(S.cast && S.scene !== 'CAST' && S.scene !== 'EGGINFO') a += '<button onclick="castOpen()" ' + (S.ended?'disabled ':'') + '>人物<br>名册与关系</button>';
+  a += '<button onclick="doSave()">存档</button>';
+  a += '<button class="dg" onclick="doReset()">重开一世</button>';
+  document.getElementById('acts').innerHTML =
+    '<div class="acts-in">' + a + '</div>' +
+    '<div id="tip">修为满则可闭关破关，破关延寿；寿元燃尽则坐化，伤势满百则身死，道心散尽则堕魔。</div>';
+
+  if(S.scene === 'CREATE') renderCreate();
+}
+
+/* ---------------- 选择 ---------------- */
+function choose(i){
+  if(S.ended) return;
+  var c = CUR[i];
+  if(!c) return;
+  if(c.need && !c.need()){ render(); return; }          /* 选项已失效：重绘，避免点了没反应 */
+
+  S.last = ''; S.lastKind = '';
+  if(c.do) { var r = c.do(); if(r === true) { render(); return; } }
+  if(check()) return;
+
+  var nx = (typeof c.go === 'function') ? c.go() : c.go;
+  if(!nx){ save(); render(); return; }
+
+  /* 人物事件：每 2-3 个主线场景插入一次 */
+  var fromNpc = (S.scene === 'NPC' || S.scene === 'MEET' || S.scene === 'CAST' || S.scene === 'TALENT');
+  if(!fromNpc && S.cast && S.npcCd > 0 && /^s[1-8]$/.test(nx)){
+    S.npcCd--;
+    if(S.npcCd === 0) nx = npcTrigger(nx);
+  }
+
+  if(S.last){ S.news = S.last; }
+  S.last = '';
+  S.scene = nx;
+  doomFortune();                                    /* 彩蛋：路上机缘略多 */
+  save(); render();
+  if(typeof window !== 'undefined' && window.scrollTo) window.scrollTo(0,0);
+}
+
+/* ---------------- 启动 ---------------- */
+/* 事件委托：#opts 每次只换 innerHTML，监听器挂在容器上，永远不会随重渲染失效 */
+function bindDelegates(){
+  var box = document.getElementById('opts');
+  if(!box || !box.addEventListener) return;
+  box.addEventListener('click', function(e){
+    var t = e.target;
+    while(t && t !== box && !(t.getAttribute && t.getAttribute('data-i') !== null)) t = t.parentNode;
+    if(!t || t === box || !t.getAttribute) return;
+    if(t.disabled) return;
+    var i = parseInt(t.getAttribute('data-i'), 10);
+    if(isNaN(i)) return;
+    choose(i);
+  }, false);
+}
+function boot(){
+  if(!load()){ newGame(); } else { render(); }
+  bindDelegates();
+}
+if(typeof document !== 'undefined' && document.getElementById){ boot(); }
+</script>
+</body>
+</html>

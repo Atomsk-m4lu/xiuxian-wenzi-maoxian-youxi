@@ -1,0 +1,28 @@
+# 密钥与本地配置：绝不入库
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.json
+secrets.*
+config.local.*
+credentials.*
+.credentials
+*_token.txt
+api_key*
+apikey*
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 临时与日志
+*.log
+*.tmp
+_*.js
+_*.txt
